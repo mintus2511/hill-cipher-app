@@ -59,5 +59,4 @@ else:
 
         st.success(f"✅ Found {len(matrices)} involutory matrices mod 26")
         for i, mat in enumerate(matrices):
-            st.text(f"Matrix {i+1}:
-{mat}")
+            st.text(f"Matrix {i+1}:\n{mat}")
