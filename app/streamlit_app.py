@@ -1,7 +1,11 @@
 
 import streamlit as st
 import numpy as np
-from app.cipher_logic import encrypt, decrypt, mod_matrix_inverse
+from cipher_logic import encrypt, decrypt, mod_matrix_inverse
+import sys
+import os
+sys.path.append(os.path.abspath(".."))  # So Python can find parent folders
+
 from utils.involutory_finder import find_involutory_matrices
 
 st.set_page_config(page_title="🔐 Hill Cipher++", layout="wide")
