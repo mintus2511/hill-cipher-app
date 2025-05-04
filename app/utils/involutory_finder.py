@@ -1,14 +1,17 @@
-
 import numpy as np
-from itertools import product
 
-def find_involutory_matrices(n=2, mod=26):
-    identity = np.identity(n, dtype=int)
-    found = []
+def generate_involutory_matrix(size, mod=26):
+    """
+    Generates an involutory matrix A such that A * A ≡ I mod 'mod'
+    """
+    attempts = 0
+    max_attempts = 1000  # Prevent infinite loop
 
-    for flat in product(range(mod), repeat=n*n):
-        A = np.array(flat).reshape((n, n))
-        if np.array_equal((A @ A) % mod, identity):
-            found.append(A)
+    while attempts < max_attempts:
+        A = np.random.randint(0, mod, size=(size, size))
+        A_squared = np.mod(np.dot(A, A), mod)
+        if np.array_equal(A_squared, np.identity(size, dtype=int) % mod):
+            return A
+        attempts += 1
 
-    return found
+    raise ValueError(f"Failed to find involutory matrix after {max_attempts} attempts.")
