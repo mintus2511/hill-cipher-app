@@ -55,8 +55,7 @@ with st.expander("📚 Or choose from all generated involutory matrices"):
 
     if "generated_matrices" in st.session_state:
         matrix_options = {
-            f"Matrix {i+1}:
-{m}": m for i, m in enumerate(st.session_state.generated_matrices)
+            f"Matrix {i+1}:\n{np.array2string(m)}": m for i, m in enumerate(st.session_state.generated_matrices)
         }
         selected = st.selectbox("Choose a matrix to use:", list(matrix_options.keys()))
         if selected:
@@ -151,7 +150,9 @@ with right_col:
     st.markdown("### 🔓 Decrypt with Hill++")
     gamma_dec = st.number_input("Gamma (γ) – Decryption", min_value=1, value=3, key="gamma_dec")
 
-    st.session_state.use_same_beta = st.checkbox("🔁 Use same β from encryption", value=st.session_state.use_same_beta)
+    col_beta_sync = st.columns([1, 3])
+    with col_beta_sync[0]:
+        st.session_state.use_same_beta = st.checkbox("🔁", value=st.session_state.use_same_beta, help="Use same β from encryption")
 
     if st.session_state.use_same_beta and st.session_state.random_beta_enc:
         st.session_state.random_beta_dec = st.session_state.random_beta_enc.copy()
