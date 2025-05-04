@@ -57,13 +57,11 @@ elif st.session_state.section == "Hill Cipher++":
     mod = 26
     block_size = st.number_input("Matrix size (n x n)", min_value=2, max_value=6, value=2, step=1)
 
-    # Reset auto_matrix if size changes
     if "last_size" not in st.session_state or st.session_state.last_size != block_size:
         st.session_state.auto_matrix = None
         st.session_state.selected_generated_matrix = None
         st.session_state.last_size = block_size
 
-    # --- Manual Key Input ---
     st.markdown("---")
     st.subheader("🔑 Manual Key Matrix Input")
     st.markdown(f"Enter your {block_size}×{block_size} key matrix below (mod 26):")
@@ -76,7 +74,6 @@ elif st.session_state.section == "Hill Cipher++":
         else:
             st.error("❌ Could not generate an involutory matrix.")
 
-    # Optional: Select from all generated involutory matrices
     with st.expander("📚 Or choose from all generated involutory matrices"):
         max_gen = st.slider("Max matrices to generate", 1, 100, 10)
         if st.button("🔍 Generate All Possible Involutory Matrices"):
@@ -106,6 +103,8 @@ elif st.session_state.section == "Hill Cipher++":
                 f"Key[{i},{j}]", min_value=0, max_value=25, value=default_val, key=f"key_{i}_{j}"
             )
 
+    st.session_state.key_matrix = key_matrix
+
     st.success("✅ Key matrix input complete.")
     st.write("Key matrix:")
     st.write(key_matrix)
@@ -115,22 +114,21 @@ elif st.session_state.section == "Hill Cipher++":
     else:
         st.warning("⚠️ This matrix is not involutory. Hill++ decryption may fail.")
 
-    # --- Simple Hill Cipher ---
     st.markdown("---")
     st.subheader("✍️ Encrypt / Decrypt Message")
     mode = st.radio("Mode", ["Encrypt", "Decrypt"])
     text_input = st.text_input("Enter text (A–Z only):", "HELLO")
 
-    if st.button("🔁 Run Cipher") and key_matrix is not None:
+    if st.button("🔁 Run Cipher"):
         try:
             if mode == "Encrypt":
-                result = encrypt(text_input, key_matrix, mod)
+                result = encrypt(text_input, st.session_state.key_matrix, mod)
             else:
-                result = decrypt(text_input, key_matrix, mod)
+                result = decrypt(text_input, st.session_state.key_matrix, mod)
             st.text_area("Result:", value=result, height=100)
 
             if mode == "Decrypt":
-                inv = mod_matrix_inverse(key_matrix, mod)
+                inv = mod_matrix_inverse(st.session_state.key_matrix, mod)
                 st.write("🔁 Inverse Key Matrix mod 26:")
                 st.write(inv)
         except Exception as e:
@@ -140,6 +138,12 @@ elif st.session_state.section == "Hill++ Encryption":
     st.markdown("## 🔐 Hill++ Mode")
     mod = 26
     block_size = st.session_state.last_size if "last_size" in st.session_state else 2
+
+    st.markdown("### Current Key Matrix")
+    if "key_matrix" in st.session_state:
+        st.write(st.session_state.key_matrix)
+    else:
+        st.warning("⚠️ No key matrix found. Please complete the Hill Cipher++ section first.")
 
     st.markdown("### Input Parameters")
     gamma = st.number_input("Gamma (γ)", min_value=1, value=3)
@@ -170,7 +174,7 @@ elif st.session_state.section == "Hill++ Encryption":
     text_enc = st.text_input("Enter text to encrypt (A–Z):", "HELLO", key="hillpp_text_enc")
     if st.button("▶️ Encrypt (Hill++)"):
         try:
-            C_blocks, encrypted_text = hillpp_encrypt(text_enc, key_matrix, gamma, beta_enc)
+            C_blocks, encrypted_text = hillpp_encrypt(text_enc, st.session_state.key_matrix, gamma, beta_enc)
             st.success(f"Encrypted text: {encrypted_text}")
             st.write("🔐 Cipher blocks:")
             st.write(C_blocks)
@@ -193,7 +197,7 @@ elif st.session_state.section == "Hill++ Encryption":
 
     if st.button("▶️ Decrypt (Hill++)"):
         try:
-            P_blocks, decrypted_text = hillpp_decrypt(text_dec, key_matrix, gamma, beta_dec)
+            P_blocks, decrypted_text = hillpp_decrypt(text_dec, st.session_state.key_matrix, gamma, beta_dec)
             st.success(f"Decrypted text: {decrypted_text}")
             st.write("🔓 Plaintext blocks:")
             st.write(P_blocks)
