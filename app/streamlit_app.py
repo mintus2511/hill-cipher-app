@@ -147,7 +147,8 @@ with left_col:
 with right_col:
     st.markdown("### 🔓 Decrypt with Hill++")
     gamma_dec = st.number_input("Gamma (γ) – Decryption", min_value=1, value=3, key="gamma_dec")
-    st.markdown("#### 🔢 Input Seed β (initial vector)")
+    st.markdown("#### 🔢 Input Seed β (initial vector) – Decryption")
+    
     beta_dec = []
     cols = st.columns(block_size)
     for i in range(block_size):
@@ -160,18 +161,17 @@ with right_col:
             cols[i].number_input(f"β[{i}] (dec)", min_value=0, max_value=25, value=default_val, key=f"beta_dec_{i}_right")
         )
 
-
     text_dec = st.text_input("Enter text to decrypt (A–Z):", key="text_dec")
 
     if st.button("▶️ Run Decryption"):
         try:
-            beta_dec = [int(x.strip()) for x in beta_dec_input.split(",")]
             P_blocks, decrypted_text = hillpp_decrypt(text_dec, key_matrix, gamma_dec, beta_dec)
             st.success(f"Decrypted text: {decrypted_text}")
             st.write("🔓 Plaintext blocks:")
             st.write(P_blocks)
         except Exception as e:
             st.error(f"❌ Decryption error: {e}")
+
 
 
 st.markdown("---")
