@@ -53,7 +53,7 @@ if st.session_state.section == "User Guide":
     👉 Use the top menu to navigate to encryption sections.
     """)
 
-elif st.session_state.section == "Hill Cipher++":
+elif st.session_state.section in ["Hill Cipher++", "Hill++ Encryption"]:
     mod = 26
     block_size = st.number_input("Matrix size (n x n)", min_value=2, max_value=6, value=2, step=1)
 
@@ -114,25 +114,26 @@ elif st.session_state.section == "Hill Cipher++":
     else:
         st.warning("⚠️ This matrix is not involutory. Hill++ decryption may fail.")
 
-    st.markdown("---")
-    st.subheader("✍️ Encrypt / Decrypt Message")
-    mode = st.radio("Mode", ["Encrypt", "Decrypt"])
-    text_input = st.text_input("Enter text (A–Z only):", "HELLO")
+    if st.session_state.section == "Hill Cipher++":
+        st.markdown("---")
+        st.subheader("✍️ Encrypt / Decrypt Message")
+        mode = st.radio("Mode", ["Encrypt", "Decrypt"])
+        text_input = st.text_input("Enter text (A–Z only):", "HELLO")
 
-    if st.button("🔁 Run Cipher"):
-        try:
-            if mode == "Encrypt":
-                result = encrypt(text_input, st.session_state.key_matrix, mod)
-            else:
-                result = decrypt(text_input, st.session_state.key_matrix, mod)
-            st.text_area("Result:", value=result, height=100)
+        if st.button("🔁 Run Cipher"):
+            try:
+                if mode == "Encrypt":
+                    result = encrypt(text_input, st.session_state.key_matrix, mod)
+                else:
+                    result = decrypt(text_input, st.session_state.key_matrix, mod)
+                st.text_area("Result:", value=result, height=100)
 
-            if mode == "Decrypt":
-                inv = mod_matrix_inverse(st.session_state.key_matrix, mod)
-                st.write("🔁 Inverse Key Matrix mod 26:")
-                st.write(inv)
-        except Exception as e:
-            st.error(f"❌ Error: {e}")
+                if mode == "Decrypt":
+                    inv = mod_matrix_inverse(st.session_state.key_matrix, mod)
+                    st.write("🔁 Inverse Key Matrix mod 26:")
+                    st.write(inv)
+            except Exception as e:
+                st.error(f"❌ Error: {e}")
 
 elif st.session_state.section == "Hill++ Encryption":
     st.markdown("## 🔐 Hill++ Mode")
