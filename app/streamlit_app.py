@@ -16,6 +16,8 @@ if "random_beta_dec" not in st.session_state:
     st.session_state.random_beta_dec = None
 if "auto_matrix" not in st.session_state:
     st.session_state.auto_matrix = None
+if "use_same_beta" not in st.session_state:
+    st.session_state.use_same_beta = False
 
 st.set_page_config(page_title="🔐 Hill Cipher++", layout="wide")
 st.title("🔐 Hill Cipher++ Visualization")
@@ -27,9 +29,6 @@ block_size = st.number_input("Matrix size (n x n)", min_value=2, max_value=6, va
 if "last_size" not in st.session_state or st.session_state.last_size != block_size:
     st.session_state.auto_matrix = None
     st.session_state.last_size = block_size
-
-# Auto-generate beta sync checkbox
-use_same_beta = st.checkbox("🔁 Use the same β for decryption", value=False)
 
 # --- Manual Key Input ---
 st.markdown("---")
@@ -99,11 +98,11 @@ with left_col:
     col1, col2 = st.columns([1, 1])
     if col1.button("🎲 Generate β for Encryption"):
         st.session_state.random_beta_enc = list(np.random.randint(0, 26, size=block_size))
-        if use_same_beta:
+        if st.session_state.use_same_beta:
             st.session_state.random_beta_dec = st.session_state.random_beta_enc.copy()
     if col2.button("🧹 Reset β (Encryption)"):
         st.session_state.random_beta_enc = None
-        if use_same_beta:
+        if st.session_state.use_same_beta:
             st.session_state.random_beta_dec = None
 
     st.markdown("#### 🔢 Input Seed β (initial vector) – Encryption")
@@ -132,6 +131,9 @@ with left_col:
 with right_col:
     st.markdown("### 🔓 Decrypt with Hill++")
     gamma_dec = st.number_input("Gamma (γ) – Decryption", min_value=1, value=3, key="gamma_dec")
+
+    # Move beta sync checkbox here
+    st.session_state.use_same_beta = st.checkbox("🔁 Use same β from encryption", value=st.session_state.use_same_beta)
 
     col3, col4 = st.columns([1, 1])
     if col3.button("🎲 Generate β for Decryption"):
