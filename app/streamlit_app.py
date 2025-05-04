@@ -25,16 +25,20 @@ block_size = st.selectbox("Matrix size (n x n)", [2, 3])
 st.markdown("---")
 st.subheader("🔑 Manual Key Matrix Input")
 
-key_input = st.text_area(f"Enter your {block_size}x{block_size} key matrix (comma-separated rows):", 
-                         value="3,3\n2,5" if block_size==2 else "6,24,1\n13,16,10\n20,17,15")
+st.markdown(f"Enter your {block_size}×{block_size} key matrix below (mod 26):")
 
-try:
-    key_matrix = np.array([[int(num) for num in row.split(",")] for row in key_input.strip().split("\n")])
-    assert key_matrix.shape == (block_size, block_size)
-    st.success("✅ Matrix loaded successfully")
-except:
-    st.error("⚠️ Invalid matrix format.")
-    key_matrix = None
+key_matrix = np.zeros((block_size, block_size), dtype=int)
+for i in range(block_size):
+    cols = st.columns(block_size)
+    for j in range(block_size):
+        key_matrix[i][j] = cols[j].number_input(
+            f"Key[{i},{j}]", min_value=0, max_value=25, value=(3 if i == j else 2), key=f"key_{i}_{j}"
+        )
+
+st.success("✅ Key matrix input complete.")
+st.write("Key matrix:")
+st.write(key_matrix)
+
 
 st.markdown("---")
 st.subheader("✍️ Encrypt / Decrypt Message")
