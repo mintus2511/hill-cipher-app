@@ -120,7 +120,7 @@ if st.button("🔁 Run Cipher") and key_matrix is not None:
 # --- Hill++ Cipher ---
 st.markdown("---")
 st.subheader("🧬 Hill++ Encryption & Decryption (Side-by-Side)")
-left_col, right_col = st.columns([1, 0.15, 1])
+left_col, spacer, right_col = st.columns([1, 0.15, 1])
 
 with left_col:
     st.markdown("### 🔐 Encrypt with Hill++")
