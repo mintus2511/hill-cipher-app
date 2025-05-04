@@ -2,7 +2,7 @@
 import streamlit as st
 import numpy as np
 from cipher_logic import encrypt, decrypt, mod_matrix_inverse
-from utils.involutory_finder import find_involutory_matrices
+from utils.involutory_finder import generate_involutory_matrix
 
 st.set_page_config(page_title="🔐 Hill Cipher++", layout="wide")
 st.title("🔐 Hill Cipher++ Visualization")
@@ -48,15 +48,15 @@ if st.button("🔁 Run Cipher") and key_matrix is not None:
         st.error(f"❌ Error: {e}")
 
 st.markdown("---")
-st.subheader("🧠 Auto-Generate Involutory Key Matrices")
+st.subheader("🧠 Generate Involutory Key Matrix")
 
-if block_size != 2:
-    st.warning("⚠️ Only supported for 2x2 matrices due to performance limits.")
-else:
-    if st.checkbox("🔍 Show all 2x2 involutory matrices (A² ≡ I mod 26)"):
-        with st.spinner("Calculating..."):
-            matrices = find_involutory_matrices(2, 26)
-
-        st.success(f"✅ Found {len(matrices)} involutory matrices mod 26")
-        for i, mat in enumerate(matrices):
-            st.text(f"Matrix {i+1}:\n{mat}")
+with st.expander("🔧 Matrix Generator Settings"):
+    inv_size = st.number_input("Matrix size (n x n):", min_value=2, max_value=8, value=2)
+    inv_mod = st.number_input("Modulus (mod N):", min_value=2, value=26)
+    if st.button("🔁 Generate Involutory Matrix"):
+        try:
+            inv_matrix = generate_involutory_matrix(inv_size, inv_mod)
+            st.write("✅ Involutory Matrix Found:")
+            st.write(inv_matrix)
+        except Exception as e:
+            st.error(f"❌ Failed to generate matrix: {e}")
