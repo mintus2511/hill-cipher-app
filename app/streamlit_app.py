@@ -110,19 +110,26 @@ elif mode == "Customize using user blocks (A22 and A12)":
             for j in range(half_n):
                 A12[i][j] = cols[j].number_input(f"A12[{i},{j}]", min_value=0, max_value=modulus-1, value=1, key=f"A12_{i}_{j}")
 
-        st.markdown("### 🧩 Input A21 block (bottom-left)")
-        A21 = np.zeros((half_n, half_n), dtype=int)
-        for i in range(half_n):
-            cols = st.columns(half_n)
-            for j in range(half_n):
-                A21[i][j] = cols[j].number_input(f"A21[{i},{j}]", min_value=0, max_value=modulus-1, value=0, key=f"A21_{i}_{j}")
-
-        if st.button("🧪 Construct and Check Involutory Matrix"):
+        if st.button("🧪 Try Constructing Involutory Matrix"):
             A11 = (-A22) % modulus
-            K = np.block([[A11, A12], [A21, A22]]) % modulus
-            st.write("🧮 Constructed Matrix K:")
-            st.write(K)
-            if is_involutory(K, modulus):
-                st.success("✅ This matrix is involutory: K² ≡ I mod m")
+
+            from utils.involutory_finder import construct_from_user_blocks, generate_even_involutory_matrix
+
+            # Try random A21
+            K = construct_from_user_blocks(matrix_size, modulus, A22, A12)
+
+            if K is not None:
+                st.success("✅ Found valid involutory matrix using your A22 and A12")
+                st.write("Matrix K:")
+                st.write(K)
             else:
-                st.error("❌ This matrix is NOT involutory.")
+                st.warning("⚠️ Could not find a valid A21 for the given A22 and A12.")
+
+                # Suggest fallback matrix
+                fallback = generate_even_involutory_matrix(matrix_size, modulus)
+                if fallback is not None:
+                    st.markdown("### 🤖 Suggested valid involutory matrix instead:")
+                    st.write(fallback)
+                    st.write("✅ Verified:", is_involutory(fallback, modulus))
+                else:
+                    st.error("❌ Fallback suggestion also failed. Try simpler A22/A12.")
