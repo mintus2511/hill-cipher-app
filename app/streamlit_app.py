@@ -101,7 +101,13 @@ left_col, right_col = st.columns(2)
 with left_col:
     st.markdown("### 🔐 Encrypt with Hill++")
     gamma_enc = st.number_input("Gamma (γ) – Encryption", min_value=1, value=3, key="gamma_enc")
-    beta_enc_input = st.text_input("Seed β (comma-separated) – Encryption", value="5,12", key="beta_enc")
+    st.markdown("#### 🔢 Input Seed β (initial vector) – Encryption")
+    beta_enc = []
+    cols = st.columns(block_size)
+    for i in range(block_size):
+        beta_enc.append(
+            cols[i].number_input(f"β[{i}] (enc)", min_value=0, max_value=25, value=1, key=f"beta_enc_{i}")
+        )
     text_enc = st.text_input("Enter text to encrypt (A–Z):", "HELLO", key="text_enc")
 
     if st.button("▶️ Run Encryption"):
