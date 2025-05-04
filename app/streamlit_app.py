@@ -22,6 +22,17 @@ if "selected_generated_matrix" not in st.session_state:
     st.session_state.selected_generated_matrix = None
 
 st.set_page_config(page_title="🔐 Hill Cipher++", layout="centered")
+st.markdown("""
+    <style>
+    .block-container {
+        max-width: 800px;
+        margin: auto;
+    }
+    .element-container:has(div[data-testid="column"]) > div {
+        gap: 2rem !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 st.title("🔐 Hill Cipher++ Visualization")
 
 mod = 26
