@@ -19,27 +19,55 @@ def parse_text_matrix(text_rows, m):
     except Exception:
         return None
 
+if "auto_matrix" not in st.session_state:
+    st.session_state.auto_matrix = None
+    
 st.set_page_config(page_title="🔐 Hill Cipher++", layout="wide")
 st.title("🔐 Hill Cipher++ Visualization")
 
-block_size = st.selectbox("Matrix size (n x n)", [2, 3])
+mod = 26
+block_size = st.number_input("Matrix size (n x n)", min_value=2, max_value=6, value=2, step=1)
 
+# Reset auto_matrix when size changes
+if "last_size" not in st.session_state or st.session_state.last_size != block_size:
+    st.session_state.auto_matrix = None
+    st.session_state.last_size = block_size
+    
 st.markdown("---")
 st.subheader("🔑 Manual Key Matrix Input")
 
 st.markdown(f"Enter your {block_size}×{block_size} key matrix below (mod 26):")
 
+if st.button("🎲 Auto-generate valid involutory matrix"):
+    auto = generate_involutory_matrix(block_size, 26)
+    if auto is not None:
+        st.session_state.auto_matrix = auto
+        st.success("✅ Auto-filled a valid involutory matrix!")
+    else:
+        st.error("❌ Could not generate an involutory matrix.")
+
 key_matrix = np.zeros((block_size, block_size), dtype=int)
 for i in range(block_size):
     cols = st.columns(block_size)
     for j in range(block_size):
-        key_matrix[i][j] = cols[j].number_input(
-            f"Key[{i},{j}]", min_value=0, max_value=25, value=(3 if i == j else 2), key=f"key_{i}_{j}"
+        default_val = (
+            int(st.session_state.auto_matrix[i][j])
+            if st.session_state.auto_matrix is not None and st.session_state.auto_matrix.shape == (block_size, block_size)
+            else (3 if i == j else 2)
         )
+
+        key_matrix[i][j] = cols[j].number_input(
+            f"Key[{i},{j}]", min_value=0, max_value=25, value=default_val, key=f"key_{i}_{j}"
+)
 
 st.success("✅ Key matrix input complete.")
 st.write("Key matrix:")
 st.write(key_matrix)
+
+if is_involutory(key_matrix, mod):
+    st.success("✅ This key matrix is involutory (K² ≡ I mod 26).")
+else:
+    st.warning("⚠️ This matrix is not involutory. Hill++ decryption may fail.")
 
 
 st.markdown("---")
@@ -48,7 +76,6 @@ st.subheader("✍️ Encrypt / Decrypt Message")
 mode = st.radio("Mode", ["Encrypt", "Decrypt"])
 text_input = st.text_input("Enter text (A–Z only):", "HELLO")
 
-mod = 26
 
 if st.button("🔁 Run Cipher") and key_matrix is not None:
     try:
