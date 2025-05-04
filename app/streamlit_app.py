@@ -8,6 +8,8 @@ from utils.involutory_finder import (
     construct_from_user_blocks,
     is_involutory
 )
+from utils.hillpp_cipher import hillpp_encrypt, hillpp_decrypt
+
 
 def parse_text_matrix(text_rows, m):
     """Parses a list of text rows into a numpy matrix modulo m"""
@@ -61,6 +63,32 @@ if st.button("🔁 Run Cipher") and key_matrix is not None:
             st.write("🔁 Inverse Key Matrix mod 26:")
             st.write(inv)
 
+    except Exception as e:
+        st.error(f"❌ Error: {e}")
+        
+st.markdown("---")
+st.subheader("🧬 Hill++ Encryption with Dynamic RMK")
+
+hill_mode = st.radio("Choose Hill++ Operation", ["Encrypt with Hill++", "Decrypt with Hill++"])
+gamma = st.number_input("Gamma (γ):", min_value=1, value=3)
+beta_input = st.text_input("Seed (β) - comma-separated:", value="5,12")
+
+beta = [int(x.strip()) for x in beta_input.split(",") if x.strip().isdigit()]
+
+text = st.text_input("Enter text for Hill++:", "HELLO")
+
+if st.button("▶️ Run Hill++"):
+    try:
+        if hill_mode == "Encrypt with Hill++":
+            C_blocks, result = hillpp_encrypt(text, key_matrix, gamma, beta)
+            st.success(f"Encrypted text: {result}")
+            st.write("🔐 Cipher blocks:")
+            st.write(C_blocks)
+        else:
+            P_blocks, result = hillpp_decrypt(text, key_matrix, gamma, beta)
+            st.success(f"Decrypted text: {result}")
+            st.write("🔓 Plaintext blocks:")
+            st.write(P_blocks)
     except Exception as e:
         st.error(f"❌ Error: {e}")
 
