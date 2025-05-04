@@ -55,7 +55,8 @@ with st.expander("📚 Or choose from all generated involutory matrices"):
 
     if "generated_matrices" in st.session_state:
         matrix_options = {
-            f"Matrix {i+1}:\n{m}": m for i, m in enumerate(st.session_state.generated_matrices)
+            f"Matrix {i+1}:
+{m}": m for i, m in enumerate(st.session_state.generated_matrices)
         }
         selected = st.selectbox("Choose a matrix to use:", list(matrix_options.keys()))
         if selected:
@@ -118,12 +119,8 @@ with left_col:
     col1, col2 = st.columns([1, 1])
     if col1.button("🎲 Generate β for Encryption"):
         st.session_state.random_beta_enc = list(np.random.randint(0, 26, size=block_size))
-        if st.session_state.use_same_beta:
-            st.session_state.random_beta_dec = st.session_state.random_beta_enc.copy()
     if col2.button("🧹 Reset β (Encryption)"):
         st.session_state.random_beta_enc = None
-        if st.session_state.use_same_beta:
-            st.session_state.random_beta_dec = None
 
     st.markdown("#### 🔢 Input Seed β (initial vector) – Encryption")
     beta_enc = []
@@ -145,6 +142,8 @@ with left_col:
             st.success(f"Encrypted text: {encrypted_text}")
             st.write("🔐 Cipher blocks:")
             st.write(C_blocks)
+            if st.session_state.use_same_beta:
+                st.session_state.random_beta_dec = beta_enc.copy()
         except Exception as e:
             st.error(f"❌ Encryption error: {e}")
 
@@ -153,6 +152,9 @@ with right_col:
     gamma_dec = st.number_input("Gamma (γ) – Decryption", min_value=1, value=3, key="gamma_dec")
 
     st.session_state.use_same_beta = st.checkbox("🔁 Use same β from encryption", value=st.session_state.use_same_beta)
+
+    if st.session_state.use_same_beta and st.session_state.random_beta_enc:
+        st.session_state.random_beta_dec = st.session_state.random_beta_enc.copy()
 
     col3, col4 = st.columns([1, 1])
     if col3.button("🎲 Generate β for Decryption"):
