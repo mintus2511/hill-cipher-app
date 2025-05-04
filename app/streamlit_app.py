@@ -20,119 +20,137 @@ if "use_same_beta" not in st.session_state:
     st.session_state.use_same_beta = False
 if "selected_generated_matrix" not in st.session_state:
     st.session_state.selected_generated_matrix = None
+if "section" not in st.session_state:
+    st.session_state.section = "Hill Cipher++"
 
 st.set_page_config(page_title="🔐 Hill Cipher++", layout="centered")
-st.markdown("""
-    <style>
-    .block-container {
-        max-width: 800px;
-        margin: auto;
-    }
-    .element-container:has(div[data-testid="column"]) > div {
-        gap: 2rem !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
 st.title("🔐 Hill Cipher++ Visualization")
 
-mod = 26
-block_size = st.number_input("Matrix size (n x n)", min_value=2, max_value=6, value=2, step=1)
+# --- Navigation ---
+st.session_state.section = st.radio(
+    "🔍 Choose a section:",
+    ["User Guide", "Hill Cipher++", "Hill++ Encryption"]
+)
 
-# Reset auto_matrix if size changes
-if "last_size" not in st.session_state or st.session_state.last_size != block_size:
-    st.session_state.auto_matrix = None
-    st.session_state.selected_generated_matrix = None
-    st.session_state.last_size = block_size
+if st.session_state.section == "User Guide":
+    st.markdown("""
+    ## 📘 User Guide
 
-# --- Manual Key Input ---
-st.markdown("---")
-st.subheader("🔑 Manual Key Matrix Input")
-st.markdown(f"Enter your {block_size}×{block_size} key matrix below (mod 26):")
+    **1. What is Hill Cipher++?**
+    - A secure variant of the Hill cipher using involutory matrices.
 
-if st.button("🎲 Auto-generate valid involutory matrix"):
-    auto = generate_involutory_matrix(block_size, mod)
-    if auto is not None:
-        st.session_state.auto_matrix = auto
-        st.success("✅ Auto-filled a valid involutory matrix!")
-    else:
-        st.error("❌ Could not generate an involutory matrix.")
+    **2. How to use:**
+    - Choose matrix size (2–6)
+    - Manually input or auto-generate an involutory key matrix
+    - Enter plaintext or ciphertext (A–Z only)
+    - For Hill++: specify gamma (γ) and initial vector β
 
-# Optional: Select from all generated involutory matrices
-with st.expander("📚 Or choose from all generated involutory matrices"):
-    max_gen = st.slider("Max matrices to generate", 1, 100, 10)
-    if st.button("🔍 Generate All Possible Involutory Matrices"):
-        all_matrices = generate_all_involutory_matrices(block_size, mod, max_gen)
-        st.session_state.generated_matrices = all_matrices
+    **3. Notes:**
+    - Use uppercase English letters only (A–Z)
+    - The key matrix must be involutory (K² ≡ I mod 26)
+    - Hill++ decryption requires correct β and γ values
 
-    if "generated_matrices" in st.session_state:
-        matrix_options = {
-            f"Matrix {i+1}:\n{np.array2string(m)}": m for i, m in enumerate(st.session_state.generated_matrices)
-        }
-        selected = st.selectbox("Choose a matrix to use:", list(matrix_options.keys()))
-        if selected:
-            st.session_state.selected_generated_matrix = matrix_options[selected]
-            st.session_state.auto_matrix = st.session_state.selected_generated_matrix
-            st.success("✅ Selected matrix applied to key input above.")
+    👉 Use the top menu to navigate to encryption sections.
+    """)
 
-key_matrix = np.zeros((block_size, block_size), dtype=int)
-for i in range(block_size):
-    cols = st.columns(block_size)
-    for j in range(block_size):
-        default_val = (
-            int(st.session_state.auto_matrix[i][j])
-            if st.session_state.auto_matrix is not None and st.session_state.auto_matrix.shape == (block_size, block_size)
-            else (3 if i == j else 2)
-        )
-        key_matrix[i][j] = cols[j].number_input(
-            f"Key[{i},{j}]", min_value=0, max_value=25, value=default_val, key=f"key_{i}_{j}"
-        )
+elif st.session_state.section == "Hill Cipher++":
+    mod = 26
+    block_size = st.number_input("Matrix size (n x n)", min_value=2, max_value=6, value=2, step=1)
 
-st.success("✅ Key matrix input complete.")
-st.write("Key matrix:")
-st.write(key_matrix)
+    # Reset auto_matrix if size changes
+    if "last_size" not in st.session_state or st.session_state.last_size != block_size:
+        st.session_state.auto_matrix = None
+        st.session_state.selected_generated_matrix = None
+        st.session_state.last_size = block_size
 
-if is_involutory(key_matrix, mod):
-    st.success("✅ This key matrix is involutory (K² ≡ I mod 26).")
-else:
-    st.warning("⚠️ This matrix is not involutory. Hill++ decryption may fail.")
+    # --- Manual Key Input ---
+    st.markdown("---")
+    st.subheader("🔑 Manual Key Matrix Input")
+    st.markdown(f"Enter your {block_size}×{block_size} key matrix below (mod 26):")
 
-# --- Simple Hill Cipher ---
-st.markdown("---")
-st.subheader("✍️ Encrypt / Decrypt Message")
-mode = st.radio("Mode", ["Encrypt", "Decrypt"])
-text_input = st.text_input("Enter text (A–Z only):", "HELLO")
-
-if st.button("🔁 Run Cipher") and key_matrix is not None:
-    try:
-        if mode == "Encrypt":
-            result = encrypt(text_input, key_matrix, mod)
+    if st.button("🎲 Auto-generate valid involutory matrix"):
+        auto = generate_involutory_matrix(block_size, mod)
+        if auto is not None:
+            st.session_state.auto_matrix = auto
+            st.success("✅ Auto-filled a valid involutory matrix!")
         else:
-            result = decrypt(text_input, key_matrix, mod)
-        st.text_area("Result:", value=result, height=100)
+            st.error("❌ Could not generate an involutory matrix.")
 
-        if mode == "Decrypt":
-            inv = mod_matrix_inverse(key_matrix, mod)
-            st.write("🔁 Inverse Key Matrix mod 26:")
-            st.write(inv)
-    except Exception as e:
-        st.error(f"❌ Error: {e}")
+    # Optional: Select from all generated involutory matrices
+    with st.expander("📚 Or choose from all generated involutory matrices"):
+        max_gen = st.slider("Max matrices to generate", 1, 100, 10)
+        if st.button("🔍 Generate All Possible Involutory Matrices"):
+            all_matrices = generate_all_involutory_matrices(block_size, mod, max_gen)
+            st.session_state.generated_matrices = all_matrices
 
-# --- Hill++ Cipher ---
-st.markdown("---")
-st.subheader("🧬 Hill++ Encryption & Decryption (Side-by-Side)")
-left_col, spacer, right_col = st.columns([1, 0.15, 1])
+        if "generated_matrices" in st.session_state:
+            matrix_options = {
+                f"Matrix {i+1}:": m for i, m in enumerate(st.session_state.generated_matrices)
+            }
+            selected = st.selectbox("Choose a matrix to use:", list(matrix_options.keys()))
+            if selected:
+                st.session_state.selected_generated_matrix = matrix_options[selected]
+                st.session_state.auto_matrix = st.session_state.selected_generated_matrix
+                st.success("✅ Selected matrix applied to key input above.")
 
-with left_col:
-    st.markdown("### 🔐 Encrypt with Hill++")
-    gamma_enc = st.number_input("Gamma (γ) – Encryption", min_value=1, value=3, key="gamma_enc")
+    key_matrix = np.zeros((block_size, block_size), dtype=int)
+    for i in range(block_size):
+        cols = st.columns(block_size)
+        for j in range(block_size):
+            default_val = (
+                int(st.session_state.auto_matrix[i][j])
+                if st.session_state.auto_matrix is not None and st.session_state.auto_matrix.shape == (block_size, block_size)
+                else (3 if i == j else 2)
+            )
+            key_matrix[i][j] = cols[j].number_input(
+                f"Key[{i},{j}]", min_value=0, max_value=25, value=default_val, key=f"key_{i}_{j}"
+            )
+
+    st.success("✅ Key matrix input complete.")
+    st.write("Key matrix:")
+    st.write(key_matrix)
+
+    if is_involutory(key_matrix, mod):
+        st.success("✅ This key matrix is involutory (K² ≡ I mod 26).")
+    else:
+        st.warning("⚠️ This matrix is not involutory. Hill++ decryption may fail.")
+
+    # --- Simple Hill Cipher ---
+    st.markdown("---")
+    st.subheader("✍️ Encrypt / Decrypt Message")
+    mode = st.radio("Mode", ["Encrypt", "Decrypt"])
+    text_input = st.text_input("Enter text (A–Z only):", "HELLO")
+
+    if st.button("🔁 Run Cipher") and key_matrix is not None:
+        try:
+            if mode == "Encrypt":
+                result = encrypt(text_input, key_matrix, mod)
+            else:
+                result = decrypt(text_input, key_matrix, mod)
+            st.text_area("Result:", value=result, height=100)
+
+            if mode == "Decrypt":
+                inv = mod_matrix_inverse(key_matrix, mod)
+                st.write("🔁 Inverse Key Matrix mod 26:")
+                st.write(inv)
+        except Exception as e:
+            st.error(f"❌ Error: {e}")
+
+elif st.session_state.section == "Hill++ Encryption":
+    st.markdown("## 🔐 Hill++ Mode")
+    mod = 26
+    block_size = st.session_state.last_size if "last_size" in st.session_state else 2
+
+    st.markdown("### Input Parameters")
+    gamma = st.number_input("Gamma (γ)", min_value=1, value=3)
 
     col1, col2 = st.columns([1, 1])
-    if col1.button("🎲 Generate β for Encryption"):
+    if col1.button("🎲 Generate β (Seed Vector)"):
         st.session_state.random_beta_enc = list(np.random.randint(0, 26, size=block_size))
-    if col2.button("🧹 Reset β (Encryption)"):
+    if col2.button("🧹 Reset β"):
         st.session_state.random_beta_enc = None
 
-    st.markdown("#### 🔢 Input Seed β (initial vector) – Encryption")
+    st.markdown("#### 🔢 Enter Seed Vector β")
     beta_enc = []
     cols = st.columns(block_size)
     for i in range(block_size):
@@ -142,41 +160,26 @@ with left_col:
             else 1
         )
         beta_enc.append(
-            cols[i].number_input(f"β[{i}] (enc)", min_value=0, max_value=25, value=default_val, key=f"beta_enc_{i}_left")
+            cols[i].number_input(f"β[{i}]", min_value=0, max_value=25, value=default_val, key=f"beta_{i}_hillpp")
         )
 
-    text_enc = st.text_input("Enter text to encrypt (A–Z):", "HELLO", key="text_enc")
-    if st.button("▶️ Run Encryption"):
+    use_for_both = st.checkbox("🔁 Use same β for decryption")
+    if use_for_both:
+        st.session_state.random_beta_dec = beta_enc.copy()
+
+    text_enc = st.text_input("Enter text to encrypt (A–Z):", "HELLO", key="hillpp_text_enc")
+    if st.button("▶️ Encrypt (Hill++)"):
         try:
-            C_blocks, encrypted_text = hillpp_encrypt(text_enc, key_matrix, gamma_enc, beta_enc)
+            C_blocks, encrypted_text = hillpp_encrypt(text_enc, key_matrix, gamma, beta_enc)
             st.success(f"Encrypted text: {encrypted_text}")
             st.write("🔐 Cipher blocks:")
             st.write(C_blocks)
-            if st.session_state.use_same_beta:
-                st.session_state.random_beta_dec = beta_enc.copy()
         except Exception as e:
             st.error(f"❌ Encryption error: {e}")
 
-with right_col:
-    st.markdown("### 🔓 Decrypt with Hill++")
-    gamma_dec = st.number_input("Gamma (γ) – Decryption", min_value=1, value=3, key="gamma_dec")
-
-    col_beta, col_info = st.columns([8, 1])
-    st.session_state.use_same_beta = col_beta.checkbox("🔁 Use same β from encryption", value=st.session_state.use_same_beta)
-    col_info.markdown("ℹ️", help="Automatically copy β (seed vector) from encryption and use it for decryption.")
-
-
-    if st.session_state.use_same_beta and st.session_state.random_beta_enc:
-        st.session_state.random_beta_dec = st.session_state.random_beta_enc.copy()
-
-    col3, col4 = st.columns([1, 1])
-    if col3.button("🎲 Generate β for Decryption"):
-        st.session_state.random_beta_dec = list(np.random.randint(0, 26, size=block_size))
-    if col4.button("🧹 Reset β (Decryption)"):
-        st.session_state.random_beta_dec = None
-
-    st.markdown("#### 🔢 Input Seed β (initial vector) – Decryption")
+    text_dec = st.text_input("Enter text to decrypt (A–Z):", key="hillpp_text_dec")
     beta_dec = []
+    st.markdown("#### 🔢 Enter β for decryption")
     cols = st.columns(block_size)
     for i in range(block_size):
         default_val = (
@@ -185,13 +188,12 @@ with right_col:
             else 1
         )
         beta_dec.append(
-            cols[i].number_input(f"β[{i}] (dec)", min_value=0, max_value=25, value=default_val, key=f"beta_dec_{i}_right")
+            cols[i].number_input(f"β[{i}] (dec)", min_value=0, max_value=25, value=default_val, key=f"beta_{i}_dec_hillpp")
         )
 
-    text_dec = st.text_input("Enter text to decrypt (A–Z):", key="text_dec")
-    if st.button("▶️ Run Decryption"):
+    if st.button("▶️ Decrypt (Hill++)"):
         try:
-            P_blocks, decrypted_text = hillpp_decrypt(text_dec, key_matrix, gamma_dec, beta_dec)
+            P_blocks, decrypted_text = hillpp_decrypt(text_dec, key_matrix, gamma, beta_dec)
             st.success(f"Decrypted text: {decrypted_text}")
             st.write("🔓 Plaintext blocks:")
             st.write(P_blocks)
