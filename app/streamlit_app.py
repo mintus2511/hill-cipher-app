@@ -1,4 +1,3 @@
-
 import streamlit as st
 import numpy as np
 from cipher_logic import encrypt, decrypt, mod_matrix_inverse
@@ -18,6 +17,11 @@ def parse_text_matrix(text_rows, m):
         return np.array(matrix, dtype=int)
     except Exception:
         return None
+if "random_beta_enc" not in st.session_state:
+    st.session_state.random_beta_enc = None
+
+if "random_beta_dec" not in st.session_state:
+    st.session_state.random_beta_dec = None
 
 if "auto_matrix" not in st.session_state:
     st.session_state.auto_matrix = None
@@ -102,13 +106,30 @@ with left_col:
     st.markdown("### 🔐 Encrypt with Hill++")
     gamma_enc = st.number_input("Gamma (γ) – Encryption", min_value=1, value=3, key="gamma_enc")
     st.markdown("#### 🔢 Input Seed β (initial vector) – Encryption")
+    if st.button("🎲 Generate Random β (Encryption)"):
+        st.session_state.random_beta_enc = list(np.random.randint(0, 26, size=block_size))
+        st.session_state.random_beta_dec = None  # reset decryption β if syncing is disabled
+
+# Add checkbox to sync β between encrypt & decrypt
+    use_same_beta = st.checkbox("🔁 Use the same β for decryption", value=False)
+
+# Draw encryption beta input
     beta_enc = []
     cols = st.columns(block_size)
     for i in range(block_size):
-        beta_enc.append(
-            cols[i].number_input(f"β[{i}] (enc)", min_value=0, max_value=25, value=1, key=f"beta_enc_{i}_left")
+        default_val = (
+            st.session_state.random_beta_enc[i]
+            if st.session_state.random_beta_enc is not None and len(st.session_state.random_beta_enc) == block_size
+            else 1
         )
-    text_enc = st.text_input("Enter text to encrypt (A–Z):", "HELLO", key="text_enc")
+        beta_enc.append(
+            cols[i].number_input(f"β[{i}] (enc)", min_value=0, max_value=25, value=default_val, key=f"beta_enc_{i}_left")
+        )
+
+# If user wants to sync β, copy to decryption
+if use_same_beta:
+    st.session_state.random_beta_dec = beta_enc.copy()
+
 
     if st.button("▶️ Run Encryption"):
         try:
@@ -123,12 +144,18 @@ with right_col:
     st.markdown("### 🔓 Decrypt with Hill++")
     gamma_dec = st.number_input("Gamma (γ) – Decryption", min_value=1, value=3, key="gamma_dec")
     st.markdown("#### 🔢 Input Seed β (initial vector)")
-    beta_enc = []
+    beta_dec = []
     cols = st.columns(block_size)
     for i in range(block_size):
-        beta_enc.append(
-            cols[i].number_input(f"β[{i}]", min_value=0, max_value=25, value=1, key=f"beta_dec_{i}_right")
+        default_val = (
+            st.session_state.random_beta_dec[i]
+            if st.session_state.random_beta_dec is not None and len(st.session_state.random_beta_dec) == block_size
+            else 1
         )
+        beta_dec.append(
+            cols[i].number_input(f"β[{i}] (dec)", min_value=0, max_value=25, value=default_val, key=f"beta_dec_{i}_right")
+        )
+
 
     text_dec = st.text_input("Enter text to decrypt (A–Z):", key="text_dec")
 
