@@ -82,13 +82,15 @@ if st.session_state.section in ["Hill Cipher++", "Hill++ Encryption"]:
 
         if "generated_matrices" in st.session_state:
             matrix_options = {
-                f"Matrix {i+1}:": m for i, m in enumerate(st.session_state.generated_matrices)
+                f"Matrix {i+1}: {np.array2string(m, separator=',', max_line_width=50)}": m
+                for i, m in enumerate(st.session_state.generated_matrices)
             }
             selected = st.selectbox("Choose a matrix to use:", list(matrix_options.keys()))
             if selected:
                 st.session_state.selected_generated_matrix = matrix_options[selected]
                 st.session_state.auto_matrix = st.session_state.selected_generated_matrix
                 st.success("✅ Selected matrix applied to key input above.")
+                st.code(np.array2string(matrix_options[selected]), language="text")
 
     key_matrix = np.zeros((block_size, block_size), dtype=int)
     for i in range(block_size):
