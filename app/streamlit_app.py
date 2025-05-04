@@ -67,30 +67,42 @@ if st.button("🔁 Run Cipher") and key_matrix is not None:
         st.error(f"❌ Error: {e}")
         
 st.markdown("---")
-st.subheader("🧬 Hill++ Encryption with Dynamic RMK")
+st.subheader("🧬 Hill++ Encryption & Decryption (Side-by-Side)")
 
-hill_mode = st.radio("Choose Hill++ Operation", ["Encrypt with Hill++", "Decrypt with Hill++"])
-gamma = st.number_input("Gamma (γ):", min_value=1, value=3)
-beta_input = st.text_input("Seed (β) - comma-separated:", value="5,12")
+left_col, right_col = st.columns(2)
 
-beta = [int(x.strip()) for x in beta_input.split(",") if x.strip().isdigit()]
+with left_col:
+    st.markdown("### 🔐 Encrypt with Hill++")
+    gamma_enc = st.number_input("Gamma (γ) – Encryption", min_value=1, value=3, key="gamma_enc")
+    beta_enc_input = st.text_input("Seed β (comma-separated) – Encryption", value="5,12", key="beta_enc")
+    text_enc = st.text_input("Enter text to encrypt (A–Z):", "HELLO", key="text_enc")
 
-text = st.text_input("Enter text for Hill++:", "HELLO")
-
-if st.button("▶️ Run Hill++"):
-    try:
-        if hill_mode == "Encrypt with Hill++":
-            C_blocks, result = hillpp_encrypt(text, key_matrix, gamma, beta)
-            st.success(f"Encrypted text: {result}")
+    if st.button("▶️ Run Encryption"):
+        try:
+            beta_enc = [int(x.strip()) for x in beta_enc_input.split(",")]
+            C_blocks, encrypted_text = hillpp_encrypt(text_enc, key_matrix, gamma_enc, beta_enc)
+            st.success(f"Encrypted text: {encrypted_text}")
             st.write("🔐 Cipher blocks:")
             st.write(C_blocks)
-        else:
-            P_blocks, result = hillpp_decrypt(text, key_matrix, gamma, beta)
-            st.success(f"Decrypted text: {result}")
+        except Exception as e:
+            st.error(f"❌ Encryption error: {e}")
+
+with right_col:
+    st.markdown("### 🔓 Decrypt with Hill++")
+    gamma_dec = st.number_input("Gamma (γ) – Decryption", min_value=1, value=3, key="gamma_dec")
+    beta_dec_input = st.text_input("Seed β (comma-separated) – Decryption", value="5,12", key="beta_dec")
+    text_dec = st.text_input("Enter text to decrypt (A–Z):", key="text_dec")
+
+    if st.button("▶️ Run Decryption"):
+        try:
+            beta_dec = [int(x.strip()) for x in beta_dec_input.split(",")]
+            P_blocks, decrypted_text = hillpp_decrypt(text_dec, key_matrix, gamma_dec, beta_dec)
+            st.success(f"Decrypted text: {decrypted_text}")
             st.write("🔓 Plaintext blocks:")
             st.write(P_blocks)
-    except Exception as e:
-        st.error(f"❌ Error: {e}")
+        except Exception as e:
+            st.error(f"❌ Decryption error: {e}")
+
 
 st.markdown("---")
 # UI for selecting generation mode
