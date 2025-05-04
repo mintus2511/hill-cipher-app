@@ -106,7 +106,7 @@ with left_col:
     cols = st.columns(block_size)
     for i in range(block_size):
         beta_enc.append(
-            cols[i].number_input(f"β[{i}] (enc)", min_value=0, max_value=25, value=1, key=f"beta_enc_{i}")
+            cols[i].number_input(f"β[{i}] (enc)", min_value=0, max_value=25, value=1, key=f"beta_enc_{i}_left")
         )
     text_enc = st.text_input("Enter text to encrypt (A–Z):", "HELLO", key="text_enc")
 
@@ -127,7 +127,7 @@ with right_col:
     cols = st.columns(block_size)
     for i in range(block_size):
         beta_enc.append(
-            cols[i].number_input(f"β[{i}]", min_value=0, max_value=25, value=1, key=f"beta_enc_{i}")
+            cols[i].number_input(f"β[{i}]", min_value=0, max_value=25, value=1, key=f"beta_dec_{i}_right")
         )
 
     text_dec = st.text_input("Enter text to decrypt (A–Z):", key="text_dec")
