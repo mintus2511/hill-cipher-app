@@ -140,67 +140,67 @@ if st.session_state.section == "Hill++ Encryption":
     mod = 26
     block_size = st.session_state.last_size if "last_size" in st.session_state else 2
 
-    st.markdown("### Current Key Matrix")
-    if "key_matrix" in st.session_state:
-        st.write(st.session_state.key_matrix)
-    else:
-        st.warning("⚠️ No key matrix found. Please complete the Hill Cipher++ section first.")
+    left_col, right_col = st.columns(2)
 
-    st.markdown("### Input Parameters")
-    gamma = st.number_input("Gamma (γ)", min_value=1, value=3)
+    with left_col:
+        st.markdown("### 🔐 Encrypt")
+        gamma = st.number_input("Gamma (γ)", min_value=1, value=3, key="gamma_enc")
 
-    col1, col2 = st.columns([1, 1])
-    if col1.button("🎲 Generate β (Seed Vector)"):
-        st.session_state.random_beta_enc = list(np.random.randint(0, 26, size=block_size))
-    if col2.button("🧹 Reset β"):
-        st.session_state.random_beta_enc = None
+        col1, col2 = st.columns([1, 1])
+        if col1.button("🎲 Generate β (Seed Vector)"):
+            st.session_state.random_beta_enc = list(np.random.randint(0, 26, size=block_size))
+        if col2.button("🧹 Reset β"):
+            st.session_state.random_beta_enc = None
 
-    st.markdown("#### 🔢 Enter Seed Vector β")
-    beta_enc = []
-    cols = st.columns(block_size)
-    for i in range(block_size):
-        default_val = (
-            st.session_state.random_beta_enc[i]
-            if st.session_state.random_beta_enc is not None and len(st.session_state.random_beta_enc) == block_size
-            else 1
-        )
-        beta_enc.append(
-            cols[i].number_input(f"β[{i}]", min_value=0, max_value=25, value=default_val, key=f"beta_{i}_hillpp")
-        )
+        st.markdown("#### 🔢 Enter Seed Vector β")
+        beta_enc = []
+        cols = st.columns(block_size)
+        for i in range(block_size):
+            default_val = (
+                st.session_state.random_beta_enc[i]
+                if st.session_state.random_beta_enc is not None and len(st.session_state.random_beta_enc) == block_size
+                else 1
+            )
+            beta_enc.append(
+                cols[i].number_input(f"β[{i}]", min_value=0, max_value=25, value=default_val, key=f"beta_{i}_hillpp")
+            )
 
-    use_for_both = st.checkbox("🔁 Use same β for decryption")
-    if use_for_both:
-        st.session_state.random_beta_dec = beta_enc.copy()
+        st.session_state.use_same_beta = st.checkbox("🔁 Use same β for decryption")
+        if st.session_state.use_same_beta:
+            st.session_state.random_beta_dec = beta_enc.copy()
 
-    text_enc = st.text_input("Enter text to encrypt (A–Z):", "HELLO", key="hillpp_text_enc")
-    if st.button("▶️ Encrypt (Hill++)"):
-        try:
-            C_blocks, encrypted_text = hillpp_encrypt(text_enc, st.session_state.key_matrix, gamma, beta_enc)
-            st.success(f"Encrypted text: {encrypted_text}")
-            st.write("🔐 Cipher blocks:")
-            st.write(C_blocks)
-        except Exception as e:
-            st.error(f"❌ Encryption error: {e}")
+        text_enc = st.text_input("Enter text to encrypt (A–Z):", "HELLO", key="hillpp_text_enc")
+        if st.button("▶️ Encrypt (Hill++)"):
+            try:
+                C_blocks, encrypted_text = hillpp_encrypt(text_enc, st.session_state.key_matrix, gamma, beta_enc)
+                st.success(f"Encrypted text: {encrypted_text}")
+                st.write("🔐 Cipher blocks:")
+                st.write(C_blocks)
+            except Exception as e:
+                st.error(f"❌ Encryption error: {e}")
 
-    text_dec = st.text_input("Enter text to decrypt (A–Z):", key="hillpp_text_dec")
-    beta_dec = []
-    st.markdown("#### 🔢 Enter β for decryption")
-    cols = st.columns(block_size)
-    for i in range(block_size):
-        default_val = (
-            st.session_state.random_beta_dec[i]
-            if st.session_state.random_beta_dec is not None and len(st.session_state.random_beta_dec) == block_size
-            else 1
-        )
-        beta_dec.append(
-            cols[i].number_input(f"β[{i}] (dec)", min_value=0, max_value=25, value=default_val, key=f"beta_{i}_dec_hillpp")
-        )
+    with right_col:
+        st.markdown("### 🔓 Decrypt")
+        text_dec = st.text_input("Enter text to decrypt (A–Z):", key="hillpp_text_dec")
 
-    if st.button("▶️ Decrypt (Hill++)"):
-        try:
-            P_blocks, decrypted_text = hillpp_decrypt(text_dec, st.session_state.key_matrix, gamma, beta_dec)
-            st.success(f"Decrypted text: {decrypted_text}")
-            st.write("🔓 Plaintext blocks:")
-            st.write(P_blocks)
-        except Exception as e:
-            st.error(f"❌ Decryption error: {e}")
+        st.markdown("#### 🔢 Enter β for decryption")
+        beta_dec = []
+        cols = st.columns(block_size)
+        for i in range(block_size):
+            default_val = (
+                st.session_state.random_beta_dec[i]
+                if st.session_state.random_beta_dec is not None and len(st.session_state.random_beta_dec) == block_size
+                else 1
+            )
+            beta_dec.append(
+                cols[i].number_input(f"β[{i}] (dec)", min_value=0, max_value=25, value=default_val, key=f"beta_{i}_dec_hillpp")
+            )
+
+        if st.button("▶️ Decrypt (Hill++)"):
+            try:
+                P_blocks, decrypted_text = hillpp_decrypt(text_dec, st.session_state.key_matrix, gamma, beta_dec)
+                st.success(f"Decrypted text: {decrypted_text}")
+                st.write("🔓 Plaintext blocks:")
+                st.write(P_blocks)
+            except Exception as e:
+                st.error(f"❌ Decryption error: {e}")
