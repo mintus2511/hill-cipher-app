@@ -9,6 +9,14 @@ from utils.involutory_finder import (
     is_involutory
 )
 
+def parse_text_matrix(text_rows, m):
+    """Parses a list of text rows into a numpy matrix modulo m"""
+    try:
+        matrix = [[int(x) % m for x in row.strip().split()] for row in text_rows]
+        return np.array(matrix, dtype=int)
+    except Exception:
+        return None
+
 st.set_page_config(page_title="🔐 Hill Cipher++", layout="wide")
 st.title("🔐 Hill Cipher++ Visualization")
 
@@ -88,24 +96,27 @@ elif mode == "Customize using user blocks (A22 and A12)":
         st.warning("Matrix size must be even for this method.")
     else:
         half_n = matrix_size // 2
-        A22 = []
-        A12 = []
-        st.markdown("### 🔢 Enter A22 matrix:")
-        for i in range(half_n):
-            A22.append(st.text_input(f"A22 Row {i+1}", value=" ".join(["0"] * half_n)))
-        st.markdown("### 🔢 Enter A12 matrix:")
-        for i in range(half_n):
-            A12.append(st.text_input(f"A12 Row {i+1}", value=" ".join(["1"] * half_n)))
+        st.markdown("### 🔢 Enter A22 matrix (space-separated values per row):")
+        A22_rows = [st.text_input(f"A22 Row {i+1}", value=" ".join(["0"] * half_n)) for i in range(half_n)]
+
+        st.markdown("### 🔢 Enter A12 matrix (space-separated values per row):")
+        A12_rows = [st.text_input(f"A12 Row {i+1}", value=" ".join(["1"] * half_n)) for i in range(half_n)]
+
         if st.button("🧪 Generate from A22 & A12"):
-            try:
-                A22_mat = np.array([[int(x) for x in row.split()] for row in A22]) % modulus
-                A12_mat = np.array([[int(x) for x in row.split()] for row in A12]) % modulus
-                K = construct_from_user_blocks(matrix_size, modulus, A22_mat, A12_mat)
-                if K is not None:
-                    st.write("✅ Matrix:")
-                    st.write(K)
-                    st.write("✅ Verified:", is_involutory(K, modulus))
-                else:
-                    st.error("❌ No valid A21 found for involutory matrix.")
-            except Exception as e:
-                st.error(f"Input error: {e}")
+            A22_mat = parse_text_matrix(A22_rows, modulus)
+            A12_mat = parse_text_matrix(A12_rows, modulus)
+
+            if A22_mat is None or A12_mat is None:
+                st.error("❌ Invalid matrix input. Please enter only space-separated integers.")
+            else:
+                try:
+                    from utils.involutory_finder import construct_from_user_blocks
+                    K = construct_from_user_blocks(matrix_size, modulus, A22_mat, A12_mat)
+                    if K is not None:
+                        st.write("✅ Involutory Matrix:")
+                        st.write(K)
+                        st.write("✅ Verified:", is_involutory(K, modulus))
+                    else:
+                        st.warning("⚠️ No valid A21 matrix found after 1000 attempts.")
+                except Exception as e:
+                    st.error(f"❌ Error: {e}")
