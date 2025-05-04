@@ -21,7 +21,7 @@ if "use_same_beta" not in st.session_state:
 if "selected_generated_matrix" not in st.session_state:
     st.session_state.selected_generated_matrix = None
 
-st.set_page_config(page_title="🔐 Hill Cipher++", layout="wide")
+st.set_page_config(page_title="🔐 Hill Cipher++", layout="centered")
 # ✅ Apply custom CSS to center and limit width
 st.markdown("""
     <style>
