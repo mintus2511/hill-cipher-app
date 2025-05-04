@@ -152,7 +152,12 @@ with right_col:
 
     col_beta_sync = st.columns([1, 3])
     with col_beta_sync[0]:
-        st.session_state.use_same_beta = st.checkbox("🔁", value=st.session_state.use_same_beta, help="Use same β from encryption")
+        st.session_state.use_same_beta = st.checkbox(
+            "🔁 Use same β from encryption",
+            value=st.session_state.use_same_beta,
+            help="Automatically copy β (seed vector) used during encryption and apply it here for decryption"
+        )
+
 
     if st.session_state.use_same_beta and st.session_state.random_beta_enc:
         st.session_state.random_beta_dec = st.session_state.random_beta_enc.copy()
