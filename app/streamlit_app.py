@@ -150,14 +150,9 @@ with right_col:
     st.markdown("### 🔓 Decrypt with Hill++")
     gamma_dec = st.number_input("Gamma (γ) – Decryption", min_value=1, value=3, key="gamma_dec")
 
-    col_beta_sync = st.columns([1, 3])
-    with col_beta_sync[0]:
-        col_beta, col_info = st.columns([8, 1])
-        with col_beta:
-            st.session_state.use_same_beta = st.checkbox("🔁 Use same β from encryption", value=st.session_state.use_same_beta)
-        with col_info:
-            st.markdown("ℹ️", help="Automatically copy β (seed vector) from encryption and use it for decryption.")
-
+    col_beta, col_info = st.columns([8, 1])
+    st.session_state.use_same_beta = col_beta.checkbox("🔁 Use same β from encryption", value=st.session_state.use_same_beta)
+    col_info.markdown("ℹ️", help="Automatically copy β (seed vector) from encryption and use it for decryption.")
 
 
     if st.session_state.use_same_beta and st.session_state.random_beta_enc:
