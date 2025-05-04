@@ -96,27 +96,33 @@ elif mode == "Customize using user blocks (A22 and A12)":
         st.warning("Matrix size must be even for this method.")
     else:
         half_n = matrix_size // 2
-        st.markdown("### 🔢 Enter A22 matrix (space-separated values per row):")
-        A22_rows = [st.text_input(f"A22 Row {i+1}", value=" ".join(["0"] * half_n)) for i in range(half_n)]
+        st.markdown("### 🧩 Input A22 block (bottom-right)")
+        A22 = np.zeros((half_n, half_n), dtype=int)
+        for i in range(half_n):
+            cols = st.columns(half_n)
+            for j in range(half_n):
+                A22[i][j] = cols[j].number_input(f"A22[{i},{j}]", min_value=0, max_value=modulus-1, value=0, key=f"A22_{i}_{j}")
 
-        st.markdown("### 🔢 Enter A12 matrix (space-separated values per row):")
-        A12_rows = [st.text_input(f"A12 Row {i+1}", value=" ".join(["1"] * half_n)) for i in range(half_n)]
+        st.markdown("### 🧩 Input A12 block (top-right)")
+        A12 = np.zeros((half_n, half_n), dtype=int)
+        for i in range(half_n):
+            cols = st.columns(half_n)
+            for j in range(half_n):
+                A12[i][j] = cols[j].number_input(f"A12[{i},{j}]", min_value=0, max_value=modulus-1, value=1, key=f"A12_{i}_{j}")
 
-        if st.button("🧪 Generate from A22 & A12"):
-            A22_mat = parse_text_matrix(A22_rows, modulus)
-            A12_mat = parse_text_matrix(A12_rows, modulus)
+        st.markdown("### 🧩 Input A21 block (bottom-left)")
+        A21 = np.zeros((half_n, half_n), dtype=int)
+        for i in range(half_n):
+            cols = st.columns(half_n)
+            for j in range(half_n):
+                A21[i][j] = cols[j].number_input(f"A21[{i},{j}]", min_value=0, max_value=modulus-1, value=0, key=f"A21_{i}_{j}")
 
-            if A22_mat is None or A12_mat is None:
-                st.error("❌ Invalid matrix input. Please enter only space-separated integers.")
+        if st.button("🧪 Construct and Check Involutory Matrix"):
+            A11 = (-A22) % modulus
+            K = np.block([[A11, A12], [A21, A22]]) % modulus
+            st.write("🧮 Constructed Matrix K:")
+            st.write(K)
+            if is_involutory(K, modulus):
+                st.success("✅ This matrix is involutory: K² ≡ I mod m")
             else:
-                try:
-                    from utils.involutory_finder import construct_from_user_blocks
-                    K = construct_from_user_blocks(matrix_size, modulus, A22_mat, A12_mat)
-                    if K is not None:
-                        st.write("✅ Involutory Matrix:")
-                        st.write(K)
-                        st.write("✅ Verified:", is_involutory(K, modulus))
-                    else:
-                        st.warning("⚠️ No valid A21 matrix found after 1000 attempts.")
-                except Exception as e:
-                    st.error(f"❌ Error: {e}")
+                st.error("❌ This matrix is NOT involutory.")
