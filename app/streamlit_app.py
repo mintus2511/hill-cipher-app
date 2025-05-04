@@ -106,7 +106,6 @@ with left_col:
 
     if st.button("▶️ Run Encryption"):
         try:
-            beta_enc = [int(x.strip()) for x in beta_enc_input.split(",")]
             C_blocks, encrypted_text = hillpp_encrypt(text_enc, key_matrix, gamma_enc, beta_enc)
             st.success(f"Encrypted text: {encrypted_text}")
             st.write("🔐 Cipher blocks:")
@@ -117,7 +116,14 @@ with left_col:
 with right_col:
     st.markdown("### 🔓 Decrypt with Hill++")
     gamma_dec = st.number_input("Gamma (γ) – Decryption", min_value=1, value=3, key="gamma_dec")
-    beta_dec_input = st.text_input("Seed β (comma-separated) – Decryption", value="5,12", key="beta_dec")
+    st.markdown("#### 🔢 Input Seed β (initial vector)")
+    beta_enc = []
+    cols = st.columns(block_size)
+    for i in range(block_size):
+        beta_enc.append(
+            cols[i].number_input(f"β[{i}]", min_value=0, max_value=25, value=1, key=f"beta_enc_{i}")
+        )
+
     text_dec = st.text_input("Enter text to decrypt (A–Z):", key="text_dec")
 
     if st.button("▶️ Run Decryption"):
