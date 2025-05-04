@@ -28,15 +28,8 @@ if "last_size" not in st.session_state or st.session_state.last_size != block_si
     st.session_state.auto_matrix = None
     st.session_state.last_size = block_size
 
-# Auto-generate beta checkbox and button (must come before left_col/right_col)
+# Auto-generate beta sync checkbox
 use_same_beta = st.checkbox("🔁 Use the same β for decryption", value=False)
-
-if st.button("🎲 Generate Random β (Encryption)"):
-    st.session_state.random_beta_enc = list(np.random.randint(0, 26, size=block_size))
-    if use_same_beta:
-        st.session_state.random_beta_dec = st.session_state.random_beta_enc.copy()
-    else:
-        st.session_state.random_beta_dec = None
 
 # --- Manual Key Input ---
 st.markdown("---")
@@ -102,6 +95,17 @@ left_col, right_col = st.columns(2)
 with left_col:
     st.markdown("### 🔐 Encrypt with Hill++")
     gamma_enc = st.number_input("Gamma (γ) – Encryption", min_value=1, value=3, key="gamma_enc")
+
+    col1, col2 = st.columns([1, 1])
+    if col1.button("🎲 Generate β for Encryption"):
+        st.session_state.random_beta_enc = list(np.random.randint(0, 26, size=block_size))
+        if use_same_beta:
+            st.session_state.random_beta_dec = st.session_state.random_beta_enc.copy()
+    if col2.button("🧹 Reset β (Encryption)"):
+        st.session_state.random_beta_enc = None
+        if use_same_beta:
+            st.session_state.random_beta_dec = None
+
     st.markdown("#### 🔢 Input Seed β (initial vector) – Encryption")
     beta_enc = []
     cols = st.columns(block_size)
@@ -128,6 +132,13 @@ with left_col:
 with right_col:
     st.markdown("### 🔓 Decrypt with Hill++")
     gamma_dec = st.number_input("Gamma (γ) – Decryption", min_value=1, value=3, key="gamma_dec")
+
+    col3, col4 = st.columns([1, 1])
+    if col3.button("🎲 Generate β for Decryption"):
+        st.session_state.random_beta_dec = list(np.random.randint(0, 26, size=block_size))
+    if col4.button("🧹 Reset β (Decryption)"):
+        st.session_state.random_beta_dec = None
+
     st.markdown("#### 🔢 Input Seed β (initial vector) – Decryption")
     beta_dec = []
     cols = st.columns(block_size)
@@ -150,70 +161,3 @@ with right_col:
             st.write(P_blocks)
         except Exception as e:
             st.error(f"❌ Decryption error: {e}")
-
-# --- Involutory Matrix Generator ---
-st.markdown("---")
-st.subheader("🔧 Involutory Matrix Generator")
-mode = st.radio("Choose method", [
-    "Generate 1 involutory matrix",
-    "Generate all involutory matrices",
-    "Customize using user blocks (A22 and A12)"
-])
-
-matrix_size = st.number_input("Matrix size n (nxn):", min_value=2, value=2, step=1)
-modulus = st.number_input("Modulus (mod m):", min_value=2, value=26, step=1)
-
-if mode == "Generate 1 involutory matrix":
-    if st.button("🔁 Generate One"):
-        K = generate_involutory_matrix(matrix_size, modulus)
-        if K is not None:
-            st.write("✅ Matrix:")
-            st.write(K)
-            st.write("✅ Verified:", is_involutory(K, modulus))
-        else:
-            st.error("❌ Could not generate involutory matrix.")
-
-elif mode == "Generate all involutory matrices":
-    max_matrices = st.slider("Max matrices to generate", 1, 100, 10)
-    if st.button("📚 Generate All"):
-        matrices = generate_all_involutory_matrices(matrix_size, modulus, max_matrices)
-        st.success(f"✅ {len(matrices)} matrices found.")
-        for i, mat in enumerate(matrices):
-            st.text(f"Matrix {i+1}:")
-            st.write(mat)
-
-elif mode == "Customize using user blocks (A22 and A12)":
-    if matrix_size % 2 != 0:
-        st.warning("Matrix size must be even for this method.")
-    else:
-        half_n = matrix_size // 2
-        st.markdown("### 🧩 Input A22 block (bottom-right)")
-        A22 = np.zeros((half_n, half_n), dtype=int)
-        for i in range(half_n):
-            cols = st.columns(half_n)
-            for j in range(half_n):
-                A22[i][j] = cols[j].number_input(f"A22[{i},{j}]", min_value=0, max_value=modulus-1, value=0, key=f"A22_{i}_{j}")
-
-        st.markdown("### 🧩 Input A12 block (top-right)")
-        A12 = np.zeros((half_n, half_n), dtype=int)
-        for i in range(half_n):
-            cols = st.columns(half_n)
-            for j in range(half_n):
-                A12[i][j] = cols[j].number_input(f"A12[{i},{j}]", min_value=0, max_value=modulus-1, value=1, key=f"A12_{i}_{j}")
-
-        if st.button("🧪 Try Constructing Involutory Matrix"):
-            from utils.involutory_finder import generate_even_involutory_matrix
-            K = construct_from_user_blocks(matrix_size, modulus, A22, A12)
-            if K is not None:
-                st.success("✅ Found valid involutory matrix using your A22 and A12")
-                st.write("Matrix K:")
-                st.write(K)
-            else:
-                st.warning("⚠️ Could not find a valid A21 for the given A22 and A12.")
-                fallback = generate_even_involutory_matrix(matrix_size, modulus)
-                if fallback is not None:
-                    st.markdown("### 🤖 Suggested valid involutory matrix instead:")
-                    st.write(fallback)
-                    st.write("✅ Verified:", is_involutory(fallback, modulus))
-                else:
-                    st.error("❌ Fallback suggestion also failed.")
