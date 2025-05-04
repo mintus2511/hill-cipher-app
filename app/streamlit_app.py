@@ -105,15 +105,17 @@ left_col, right_col = st.columns(2)
 with left_col:
     st.markdown("### 🔐 Encrypt with Hill++")
     gamma_enc = st.number_input("Gamma (γ) – Encryption", min_value=1, value=3, key="gamma_enc")
-    st.markdown("#### 🔢 Input Seed β (initial vector) – Encryption")
+
+    # 🎲 Generate random beta
     if st.button("🎲 Generate Random β (Encryption)"):
         st.session_state.random_beta_enc = list(np.random.randint(0, 26, size=block_size))
-        st.session_state.random_beta_dec = None  # reset decryption β if syncing is disabled
+        st.session_state.random_beta_dec = None  # reset dec beta unless synced
 
-# Add checkbox to sync β between encrypt & decrypt
+    # 🔁 Sync beta checkbox
     use_same_beta = st.checkbox("🔁 Use the same β for decryption", value=False)
 
-# Draw encryption beta input
+    # 🔢 Input β block for encryption
+    st.markdown("#### 🔢 Input Seed β (initial vector) – Encryption")
     beta_enc = []
     cols = st.columns(block_size)
     for i in range(block_size):
@@ -126,10 +128,12 @@ with left_col:
             cols[i].number_input(f"β[{i}] (enc)", min_value=0, max_value=25, value=default_val, key=f"beta_enc_{i}_left")
         )
 
-# If user wants to sync β, copy to decryption
-if use_same_beta:
-    st.session_state.random_beta_dec = beta_enc.copy()
+    # Sync to decryption if checked
+    if use_same_beta:
+        st.session_state.random_beta_dec = beta_enc.copy()
 
+    # Input plaintext
+    text_enc = st.text_input("Enter text to encrypt (A–Z):", "HELLO", key="text_enc")
 
     if st.button("▶️ Run Encryption"):
         try:
