@@ -26,10 +26,11 @@ st.set_page_config(page_title="🔐 Hill Cipher++", layout="wide")
 st.markdown("""
     <style>
         .main .block-container {
-            max-width: 900px;
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-            margin: auto;
+            max-width: 700px;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            margin-left: auto;
+            margin-right: auto;
         }
     </style>
 """, unsafe_allow_html=True)
