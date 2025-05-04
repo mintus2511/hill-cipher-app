@@ -18,6 +18,8 @@ if "auto_matrix" not in st.session_state:
     st.session_state.auto_matrix = None
 if "use_same_beta" not in st.session_state:
     st.session_state.use_same_beta = False
+if "selected_generated_matrix" not in st.session_state:
+    st.session_state.selected_generated_matrix = None
 
 st.set_page_config(page_title="🔐 Hill Cipher++", layout="wide")
 st.title("🔐 Hill Cipher++ Visualization")
@@ -28,6 +30,7 @@ block_size = st.number_input("Matrix size (n x n)", min_value=2, max_value=6, va
 # Reset auto_matrix if size changes
 if "last_size" not in st.session_state or st.session_state.last_size != block_size:
     st.session_state.auto_matrix = None
+    st.session_state.selected_generated_matrix = None
     st.session_state.last_size = block_size
 
 # --- Manual Key Input ---
@@ -42,6 +45,23 @@ if st.button("🎲 Auto-generate valid involutory matrix"):
         st.success("✅ Auto-filled a valid involutory matrix!")
     else:
         st.error("❌ Could not generate an involutory matrix.")
+
+# Optional: Select from all generated involutory matrices
+with st.expander("📚 Or choose from all generated involutory matrices"):
+    max_gen = st.slider("Max matrices to generate", 1, 100, 10)
+    if st.button("🔍 Generate All Possible Involutory Matrices"):
+        all_matrices = generate_all_involutory_matrices(block_size, mod, max_gen)
+        st.session_state.generated_matrices = all_matrices
+
+    if "generated_matrices" in st.session_state:
+        matrix_options = {
+            f"Matrix {i+1}:\n{m}": m for i, m in enumerate(st.session_state.generated_matrices)
+        }
+        selected = st.selectbox("Choose a matrix to use:", list(matrix_options.keys()))
+        if selected:
+            st.session_state.selected_generated_matrix = matrix_options[selected]
+            st.session_state.auto_matrix = st.session_state.selected_generated_matrix
+            st.success("✅ Selected matrix applied to key input above.")
 
 key_matrix = np.zeros((block_size, block_size), dtype=int)
 for i in range(block_size):
@@ -132,7 +152,6 @@ with right_col:
     st.markdown("### 🔓 Decrypt with Hill++")
     gamma_dec = st.number_input("Gamma (γ) – Decryption", min_value=1, value=3, key="gamma_dec")
 
-    # Move beta sync checkbox here
     st.session_state.use_same_beta = st.checkbox("🔁 Use same β from encryption", value=st.session_state.use_same_beta)
 
     col3, col4 = st.columns([1, 1])
