@@ -1,4 +1,3 @@
-
 import numpy as np
 from sympy import Matrix
 
@@ -16,21 +15,21 @@ def text_to_numbers(text):
 def numbers_to_text(numbers):
     return ''.join(ALPHABET[num % 26] for num in numbers)
 
-def is_invertible(matrix, mod):
-    det = int(round(np.linalg.det(matrix)))
-    return gcd(det, mod) == 1
-
 def gcd(a, b):
     while b:
         a, b = b, a % b
     return a
+
+def is_invertible_matrix(matrix, mod):  # Renamed for compatibility
+    det = int(round(np.linalg.det(matrix)))
+    return gcd(det, mod) == 1
 
 def mod_matrix_inverse(matrix, mod):
     try:
         sympy_matrix = Matrix(matrix)
         return np.array(sympy_matrix.inv_mod(mod)).astype(int)
     except:
-        raise ValueError("Matrix is not invertible under mod {}".format(mod))
+        raise ValueError(f"Matrix is not invertible under mod {mod}")
 
 def encrypt(plaintext, key_matrix, mod=26):
     block_size = key_matrix.shape[0]
