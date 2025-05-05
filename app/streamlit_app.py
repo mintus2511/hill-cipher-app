@@ -69,9 +69,24 @@ if st.session_state.section in ["Hill Cipher", "Hill++"]:
 
     if st.session_state.section == "Hill++":
         st.session_state.hillpp_matrix_mode = st.radio("Choose matrix input mode:", ["Manual", "Auto-generate", "Choose from list"], key="hillpp_matrix_mode_selector")
-
     else:
         st.session_state.hillpp_matrix_mode = "Manual"
+
+    if st.session_state.section == "Hill Cipher":
+        if st.button("🎲 Generate Invertible Matrix"):
+            found = False
+            attempts = 0
+            while not found and attempts < 100:
+                random_matrix = np.random.randint(0, 26, size=(block_size, block_size))
+                if is_invertible_matrix(random_matrix, mod):
+                    st.session_state.key_matrix = random_matrix
+                    st.session_state.auto_matrix = random_matrix
+                    st.success("✅ Invertible matrix generated!")
+                    st.write(random_matrix)
+                    found = True
+                attempts += 1
+            if not found:
+                st.error("❌ Could not generate invertible matrix after 100 attempts.")
 
     if st.session_state.hillpp_matrix_mode == "Manual":
         st.markdown(f"Enter your {block_size}×{block_size} key matrix below (mod 26):")
