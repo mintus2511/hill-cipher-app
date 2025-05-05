@@ -1,6 +1,6 @@
 import streamlit as st
 import numpy as np
-from cipher_logic import encrypt, decrypt, mod_matrix_inverse
+from cipher_logic import encrypt, decrypt, mod_matrix_inverse, is_invertible_matrix
 from utils.involutory_finder import (
     generate_involutory_matrix,
     generate_all_involutory_matrices,
@@ -21,22 +21,24 @@ if "use_same_beta" not in st.session_state:
 if "selected_generated_matrix" not in st.session_state:
     st.session_state.selected_generated_matrix = None
 if "section" not in st.session_state:
-    st.session_state.section = "Hill Cipher++"
+    st.session_state.section = "Hill Cipher"
+if "hillpp_matrix_mode" not in st.session_state:
+    st.session_state.hillpp_matrix_mode = "Manual"
 
-st.set_page_config(page_title="🔐 Hill Cipher++", layout="centered")
-st.title("🔐 Hill Cipher++ Visualization")
+st.set_page_config(page_title="🔐 Hill Cipher", layout="centered")
+st.title("🔐 Hill Cipher Visualization")
 
 # --- Navigation ---
 st.session_state.section = st.radio(
     "🔍 Choose a section:",
-    ["User Guide", "Hill Cipher++", "Hill++ Encryption"]
+    ["User Guide", "Hill Cipher", "Hill++"]
 )
 
 if st.session_state.section == "User Guide":
     st.markdown("""
     ## 📘 User Guide
 
-    **1. What is Hill Cipher++?**
+    **1. What is Hill Cipher?**
     - A secure variant of the Hill cipher using involutory matrices.
 
     **2. How to use:**
@@ -47,13 +49,13 @@ if st.session_state.section == "User Guide":
 
     **3. Notes:**
     - Use uppercase English letters only (A–Z)
-    - The key matrix must be involutory (K² ≡ I mod 26)
+    - The key matrix must be involutory (K² ≡ I mod 26) or invertible for Hill Cipher
     - Hill++ decryption requires correct β and γ values
 
     👉 Use the top menu to navigate to encryption sections.
     """)
 
-if st.session_state.section in ["Hill Cipher++", "Hill++ Encryption"]:
+if st.session_state.section in ["Hill Cipher", "Hill++"]:
     mod = 26
     block_size = st.number_input("Matrix size (n x n)", min_value=2, max_value=6, value=2, step=1)
 
@@ -63,60 +65,70 @@ if st.session_state.section in ["Hill Cipher++", "Hill++ Encryption"]:
         st.session_state.last_size = block_size
 
     st.markdown("---")
-    st.subheader("🔑 Manual Key Matrix Input")
-    st.markdown(f"Enter your {block_size}×{block_size} key matrix below (mod 26):")
+    st.subheader("🔑 Key Matrix Setup")
 
-    if st.button("🎲 Auto-generate valid involutory matrix"):
-        auto = generate_involutory_matrix(block_size, mod)
-        if auto is not None:
-            st.session_state.auto_matrix = auto
-            st.success("✅ Auto-filled a valid involutory matrix!")
-        else:
-            st.error("❌ Could not generate an involutory matrix.")
+    if st.session_state.section == "Hill++":
+        st.session_state.hillpp_matrix_mode = st.radio("Choose matrix input mode:", ["Manual", "Auto-generate", "Choose from list"], key="hillpp_matrix_mode_selector")
 
-    with st.expander("📚 Or choose from all generated involutory matrices"):
+    else:
+        st.session_state.hillpp_matrix_mode = "Manual"
+
+    if st.session_state.hillpp_matrix_mode == "Manual":
+        st.markdown(f"Enter your {block_size}×{block_size} key matrix below (mod 26):")
+        key_matrix = np.zeros((block_size, block_size), dtype=int)
+        for i in range(block_size):
+            cols = st.columns(block_size)
+            for j in range(block_size):
+                default_val = (
+                    int(st.session_state.auto_matrix[i][j])
+                    if st.session_state.auto_matrix is not None and st.session_state.auto_matrix.shape == (block_size, block_size)
+                    else (3 if i == j else 2)
+                )
+                key_matrix[i][j] = cols[j].number_input(
+                    f"Key[{i},{j}]", min_value=0, max_value=25, value=default_val, key=f"key_{i}_{j}"
+                )
+        st.session_state.key_matrix = key_matrix
+        st.write("Key matrix:")
+        st.write(key_matrix)
+
+    elif st.session_state.hillpp_matrix_mode == "Auto-generate":
+        if st.button("🎲 Generate Involutory Matrix"):
+            auto = generate_involutory_matrix(block_size, mod)
+            if auto is not None:
+                st.session_state.key_matrix = auto
+                st.success("✅ Involutory matrix generated!")
+                st.write(auto)
+            else:
+                st.error("❌ Could not generate involutory matrix.")
+
+    elif st.session_state.hillpp_matrix_mode == "Choose from list":
         max_gen = st.slider("Max matrices to generate", 1, 100, 10)
-        if st.button("🔍 Generate All Possible Involutory Matrices"):
+        if st.button("🔍 Generate All Involutory Matrices"):
             all_matrices = generate_all_involutory_matrices(block_size, mod, max_gen)
             st.session_state.generated_matrices = all_matrices
-
         if "generated_matrices" in st.session_state:
             matrix_options = {
-                f"Matrix {i+1}: {np.array2string(m, separator=',', max_line_width=50)}": m
-                for i, m in enumerate(st.session_state.generated_matrices)
+                f"Matrix {i+1}:\n{np.array2string(m)}": m for i, m in enumerate(st.session_state.generated_matrices)
             }
             selected = st.selectbox("Choose a matrix to use:", list(matrix_options.keys()))
             if selected:
-                st.session_state.selected_generated_matrix = matrix_options[selected]
-                st.session_state.auto_matrix = st.session_state.selected_generated_matrix
-                st.success("✅ Selected matrix applied to key input above.")
+                st.session_state.key_matrix = matrix_options[selected]
+                st.success("✅ Matrix selected and applied.")
                 st.code(np.array2string(matrix_options[selected]), language="text")
 
-    key_matrix = np.zeros((block_size, block_size), dtype=int)
-    for i in range(block_size):
-        cols = st.columns(block_size)
-        for j in range(block_size):
-            default_val = (
-                int(st.session_state.auto_matrix[i][j])
-                if st.session_state.auto_matrix is not None and st.session_state.auto_matrix.shape == (block_size, block_size)
-                else (3 if i == j else 2)
-            )
-            key_matrix[i][j] = cols[j].number_input(
-                f"Key[{i},{j}]", min_value=0, max_value=25, value=default_val, key=f"key_{i}_{j}"
-            )
+    if "key_matrix" in st.session_state:
+        if st.session_state.section == "Hill Cipher":
+            if is_invertible_matrix(st.session_state.key_matrix, mod):
+                st.success("✅ Key matrix is invertible (required for Hill Cipher).")
+            else:
+                st.warning("⚠️ This matrix is not invertible mod 26.")
+        else:
+            if is_involutory(st.session_state.key_matrix, mod):
+                st.success("✅ Matrix is involutory (K² ≡ I mod 26).")
+            else:
+                st.warning("⚠️ Matrix is not involutory.")
 
-    st.session_state.key_matrix = key_matrix
-
-    st.success("✅ Key matrix input complete.")
-    st.write("Key matrix:")
-    st.write(key_matrix)
-
-    if is_involutory(key_matrix, mod):
-        st.success("✅ This key matrix is involutory (K² ≡ I mod 26).")
-    else:
-        st.warning("⚠️ This matrix is not involutory. Hill++ decryption may fail.")
-
-if st.session_state.section == "Hill Cipher++":
+if st.session_state.section == "Hill Cipher":
     st.markdown("---")
     st.subheader("✍️ Encrypt / Decrypt Message")
     mode = st.radio("Mode", ["Encrypt", "Decrypt"])
@@ -137,7 +149,7 @@ if st.session_state.section == "Hill Cipher++":
         except Exception as e:
             st.error(f"❌ Error: {e}")
 
-if st.session_state.section == "Hill++ Encryption":
+if st.session_state.section == "Hill++":
     st.markdown("## 🔐 Hill++ Mode")
     mod = 26
     block_size = st.session_state.last_size if "last_size" in st.session_state else 2
