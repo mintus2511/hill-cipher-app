@@ -119,7 +119,7 @@ if st.session_state.section in ["Hill Cipher", "Hill++"]:
     if "key_matrix" in st.session_state:
         if st.session_state.section == "Hill Cipher":
             if is_invertible_matrix(st.session_state.key_matrix, mod):
-                st.success("✅ Key matrix is invertible (required for Hill Cipher).")
+                st.success("✅ Key matrix is invertible.")
             else:
                 st.warning("⚠️ This matrix is not invertible mod 26.")
         else:
