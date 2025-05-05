@@ -1,13 +1,12 @@
 import streamlit as st
 import numpy as np
-from cipher_logic import encrypt, decrypt, mod_matrix_inverse, is_invertible_matrix
+from cipher_logic import encrypt, decrypt, mod_matrix_inverse, is_invertible_matrix, text_to_numbers, numbers_to_text
 from utils.involutory_finder import (
     generate_involutory_matrix,
     generate_all_involutory_matrices,
-    construct_from_user_blocks,
     is_involutory
 )
-from utils.hillpp_cipher import hillpp_encrypt, hillpp_decrypt
+from utils.hillpp_cipher import hillpp_encrypt, hillpp_decrypt, hillpp_encrypt_verbose, hillpp_decrypt_verbose
 
 # Session state setup
 if "random_beta_enc" not in st.session_state:
@@ -120,9 +119,7 @@ if st.session_state.section in ["Hill Cipher", "Hill++"]:
             st.session_state.generated_matrices = matrices
 
         if "generated_matrices" in st.session_state:
-            matrix_options = {
-                f"Matrix {i+1}:\n{np.array2string(m)}": m for i, m in enumerate(st.session_state.generated_matrices)
-            }
+            matrix_options = {f"Matrix {i+1}:\n{np.array2string(m)}": m for i, m in enumerate(st.session_state.generated_matrices)}
             selected = st.selectbox("Choose a matrix to use:", list(matrix_options.keys()))
             if selected:
                 st.session_state.key_matrix = matrix_options[selected]
@@ -141,6 +138,9 @@ if st.session_state.section in ["Hill Cipher", "Hill++"]:
             else:
                 st.warning("⚠️ Matrix is not involutory.")
 
+# Step-by-step option
+show_steps = st.checkbox("📘 Show step-by-step calculation")
+
 if st.session_state.section == "Hill Cipher":
     st.markdown("---")
     st.subheader("✍️ Encrypt / Decrypt Message")
@@ -151,14 +151,26 @@ if st.session_state.section == "Hill Cipher":
         try:
             if mode == "Encrypt":
                 result = encrypt(text_input, st.session_state.key_matrix, mod)
+                st.text_area("Result:", value=result, height=100)
+
+                if show_steps:
+                    st.write("### 🔎 Step-by-step Encryption")
+                    st.write("1. Preprocessed text:", text_input)
+                    st.write("2. Numeric form:", text_to_numbers(text_input))
+                    st.write("3. Multiply each block by key matrix and take mod 26")
+
             else:
                 result = decrypt(text_input, st.session_state.key_matrix, mod)
-            st.text_area("Result:", value=result, height=100)
+                st.text_area("Result:", value=result, height=100)
 
-            if mode == "Decrypt":
-                inv = mod_matrix_inverse(st.session_state.key_matrix, mod)
-                st.write("🔁 Inverse Key Matrix mod 26:")
-                st.write(inv)
+                if show_steps:
+                    st.write("### 🔎 Step-by-step Decryption")
+                    st.write("1. Numeric form:", text_to_numbers(text_input))
+                    inv = mod_matrix_inverse(st.session_state.key_matrix, mod)
+                    st.write("2. Inverse matrix:")
+                    st.write(inv)
+                    st.write("3. Multiply each block by inverse matrix and take mod 26")
+
         except Exception as e:
             st.error(f"❌ Error: {e}")
 
@@ -199,10 +211,17 @@ if st.session_state.section == "Hill++":
         text_enc = st.text_input("Enter text to encrypt (A–Z):", "HELLO", key="hillpp_text_enc")
         if st.button("▶️ Encrypt (Hill++)"):
             try:
-                C_blocks, encrypted_text = hillpp_encrypt(text_enc, st.session_state.key_matrix, gamma, beta_enc)
-                st.success(f"Encrypted text: {encrypted_text}")
-                st.write("🔐 Cipher blocks:")
-                st.write(C_blocks)
+                if show_steps:
+                    steps, result = hillpp_encrypt_verbose(text_enc, st.session_state.key_matrix, gamma, beta_enc)
+                    st.success(f"Encrypted text: {result}")
+                    st.write("### 🧮 Steps")
+                    for s in steps:
+                        st.write(s)
+                else:
+                    C_blocks, encrypted_text = hillpp_encrypt(text_enc, st.session_state.key_matrix, gamma, beta_enc)
+                    st.success(f"Encrypted text: {encrypted_text}")
+                    st.write("🔐 Cipher blocks:")
+                    st.write(C_blocks)
             except Exception as e:
                 st.error(f"❌ Encryption error: {e}")
 
@@ -225,9 +244,16 @@ if st.session_state.section == "Hill++":
 
         if st.button("▶️ Decrypt (Hill++)"):
             try:
-                P_blocks, decrypted_text = hillpp_decrypt(text_dec, st.session_state.key_matrix, gamma, beta_dec)
-                st.success(f"Decrypted text: {decrypted_text}")
-                st.write("🔓 Plaintext blocks:")
-                st.write(P_blocks)
+                if show_steps:
+                    steps, result = hillpp_decrypt_verbose(text_dec, st.session_state.key_matrix, gamma, beta_dec)
+                    st.success(f"Decrypted text: {result}")
+                    st.write("### 🧮 Steps")
+                    for s in steps:
+                        st.write(s)
+                else:
+                    P_blocks, decrypted_text = hillpp_decrypt(text_dec, st.session_state.key_matrix, gamma, beta_dec)
+                    st.success(f"Decrypted text: {decrypted_text}")
+                    st.write("🔓 Plaintext blocks:")
+                    st.write(P_blocks)
             except Exception as e:
                 st.error(f"❌ Decryption error: {e}")
