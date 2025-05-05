@@ -34,11 +34,6 @@ st.session_state.section = st.radio(
     ["User Guide", "Hill Cipher", "Hill++"]
 )
 
-# Force reload if section changes
-if st.session_state.section != st.session_state.get("last_section", None):
-    st.session_state.last_section = st.session_state.section
-    st.experimental_rerun()
-
 if st.session_state.section == "User Guide":
     st.markdown("""
     ## 📘 User Guide
