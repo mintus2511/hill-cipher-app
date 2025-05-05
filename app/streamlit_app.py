@@ -54,6 +54,10 @@ if st.session_state.section == "User Guide":
     👉 Use the top menu to navigate to encryption sections.
     """)
 
+def pad_text(text, block_size, filler='/'):
+    text = ''.join(filter(str.isalpha, text.upper()))
+    return text + filler * ((block_size - len(text) % block_size) % block_size)
+
 if st.session_state.section in ["Hill Cipher", "Hill++"]:
     mod = 26
     block_size = st.number_input("Matrix size (n x n)", min_value=2, max_value=6, value=2, step=1)
@@ -119,7 +123,7 @@ if st.session_state.section in ["Hill Cipher", "Hill++"]:
             st.session_state.generated_matrices = matrices
 
         if "generated_matrices" in st.session_state:
-            matrix_options = {f"Matrix {i+1}:\n{np.array2string(m)}": m for i, m in enumerate(st.session_state.generated_matrices)}
+            matrix_options = {f"Matrix {i+1}:": m for i, m in enumerate(st.session_state.generated_matrices)}
             selected = st.selectbox("Choose a matrix to use:", list(matrix_options.keys()))
             if selected:
                 st.session_state.key_matrix = matrix_options[selected]
@@ -149,14 +153,15 @@ if st.session_state.section == "Hill Cipher":
 
     if st.button("🔁 Run Cipher"):
         try:
+            padded_text = pad_text(text_input, st.session_state.key_matrix.shape[0], filler='/')
             if mode == "Encrypt":
-                result = encrypt(text_input, st.session_state.key_matrix, mod)
+                result = encrypt(padded_text, st.session_state.key_matrix, mod)
                 st.text_area("Result:", value=result, height=100)
 
                 if show_steps:
                     st.write("### 🔎 Step-by-step Encryption")
-                    st.write("1. Preprocessed text:", text_input)
-                    st.write("2. Numeric form:", text_to_numbers(text_input))
+                    st.write("1. Preprocessed text:", padded_text)
+                    st.write("2. Numeric form:", text_to_numbers(padded_text))
                     st.write("3. Multiply each block by key matrix and take mod 26")
 
             else:
