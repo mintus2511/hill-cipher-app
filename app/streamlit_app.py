@@ -22,8 +22,8 @@ if "selected_generated_matrix" not in st.session_state:
     st.session_state.selected_generated_matrix = None
 if "section" not in st.session_state:
     st.session_state.section = "Hill Cipher"
-if "hillpp_matrix_mode" not in st.session_state:
-    st.session_state.hillpp_matrix_mode = "Manual"
+if "matrix_mode" not in st.session_state:
+    st.session_state.matrix_mode = "Manual"
 
 st.set_page_config(page_title="🔐 Hill Cipher", layout="centered")
 st.title("🔐 Hill Cipher Visualization")
@@ -39,11 +39,11 @@ if st.session_state.section == "User Guide":
     ## 📘 User Guide
 
     **1. What is Hill Cipher?**
-    - A secure variant of the Hill cipher using involutory matrices.
+    - A secure variant of the Hill cipher using involutory or invertible matrices.
 
     **2. How to use:**
     - Choose matrix size (2–6)
-    - Manually input or auto-generate an involutory key matrix
+    - Manually input or auto-generate a key matrix
     - Enter plaintext or ciphertext (A–Z only)
     - For Hill++: specify gamma (γ) and initial vector β
 
@@ -67,28 +67,9 @@ if st.session_state.section in ["Hill Cipher", "Hill++"]:
     st.markdown("---")
     st.subheader("🔑 Key Matrix Setup")
 
-    if st.session_state.section == "Hill++":
-        st.session_state.hillpp_matrix_mode = st.radio("Choose matrix input mode:", ["Manual", "Auto-generate", "Choose from list"], key="hillpp_matrix_mode_selector")
-    else:
-        st.session_state.hillpp_matrix_mode = "Manual"
+    st.session_state.matrix_mode = st.radio("Choose matrix input mode:", ["Manual", "Auto-generate", "Choose from list"], key="matrix_mode_selector")
 
-    if st.session_state.section == "Hill Cipher":
-        if st.button("🎲 Generate Invertible Matrix"):
-            found = False
-            attempts = 0
-            while not found and attempts < 100:
-                random_matrix = np.random.randint(0, 26, size=(block_size, block_size))
-                if is_invertible_matrix(random_matrix, mod):
-                    st.session_state.key_matrix = random_matrix
-                    st.session_state.auto_matrix = random_matrix
-                    st.success("✅ Invertible matrix generated!")
-                    st.write(random_matrix)
-                    found = True
-                attempts += 1
-            if not found:
-                st.error("❌ Could not generate invertible matrix after 100 attempts.")
-
-    if st.session_state.hillpp_matrix_mode == "Manual":
+    if st.session_state.matrix_mode == "Manual":
         st.markdown(f"Enter your {block_size}×{block_size} key matrix below (mod 26):")
         key_matrix = np.zeros((block_size, block_size), dtype=int)
         for i in range(block_size):
@@ -106,24 +87,42 @@ if st.session_state.section in ["Hill Cipher", "Hill++"]:
         st.write("Key matrix:")
         st.write(key_matrix)
 
-    elif st.session_state.hillpp_matrix_mode == "Auto-generate":
-        if st.button("🎲 Generate Involutory Matrix"):
-            auto = generate_involutory_matrix(block_size, mod)
-            if auto is not None:
-                st.session_state.key_matrix = auto
-                st.success("✅ Involutory matrix generated!")
-                st.write(auto)
-            else:
-                st.error("❌ Could not generate involutory matrix.")
+    elif st.session_state.matrix_mode == "Auto-generate":
+        generate_button_label = "🎲 Generate Involutory Matrix" if st.session_state.section == "Hill++" else "🎲 Generate Invertible Matrix"
+        if st.button(generate_button_label):
+            found = False
+            attempts = 0
+            while not found and attempts < 100:
+                random_matrix = np.random.randint(0, 26, size=(block_size, block_size))
+                valid = is_involutory(random_matrix, mod) if st.session_state.section == "Hill++" else is_invertible_matrix(random_matrix, mod)
+                if valid:
+                    st.session_state.key_matrix = random_matrix
+                    st.success("✅ Valid matrix generated!")
+                    st.write(random_matrix)
+                    found = True
+                attempts += 1
+            if not found:
+                st.error("❌ Could not generate a valid matrix after 100 attempts.")
 
-    elif st.session_state.hillpp_matrix_mode == "Choose from list":
+    elif st.session_state.matrix_mode == "Choose from list":
         max_gen = st.slider("Max matrices to generate", 1, 100, 10)
-        if st.button("🔍 Generate All Involutory Matrices"):
-            all_matrices = generate_all_involutory_matrices(block_size, mod, max_gen)
-            st.session_state.generated_matrices = all_matrices
+        if st.button("🔍 Generate All Matrices"):
+            if st.session_state.section == "Hill++":
+                matrices = generate_all_involutory_matrices(block_size, mod, max_gen)
+            else:
+                matrices = []
+                attempts = 0
+                while len(matrices) < max_gen and attempts < max_gen * 10:
+                    candidate = np.random.randint(0, 26, size=(block_size, block_size))
+                    if is_invertible_matrix(candidate, mod):
+                        matrices.append(candidate)
+                    attempts += 1
+            st.session_state.generated_matrices = matrices
+
         if "generated_matrices" in st.session_state:
             matrix_options = {
-                f"Matrix {i+1}:\n{np.array2string(m)}": m for i, m in enumerate(st.session_state.generated_matrices)
+                f"Matrix {i+1}:
+{np.array2string(m)}": m for i, m in enumerate(st.session_state.generated_matrices)
             }
             selected = st.selectbox("Choose a matrix to use:", list(matrix_options.keys()))
             if selected:
