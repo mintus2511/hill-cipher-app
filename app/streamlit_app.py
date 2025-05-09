@@ -262,8 +262,8 @@ if st.session_state.section == "Hill++":
 
         if st.button("▶️ Decrypt (Hill++)"):
             try:
+                original_length = st.session_state.get("original_length", len(text_dec))
                 if show_steps:
-                    original_length = st.session_state.get("original_length", len(text_dec))
                     steps, result = hillpp_decrypt_verbose(text_dec, st.session_state.key_matrix, gamma, beta_dec, original_length)
                     st.success(f"Decrypted text: {result}")
                     st.write("### 🧮 Steps")
