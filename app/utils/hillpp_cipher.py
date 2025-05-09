@@ -8,7 +8,14 @@ def vector_to_text(vec):
 
 def hillpp_encrypt(plaintext, K, gamma, beta, m=26):
     block_size = K.shape[0]
-    P = text_to_vector(plaintext, block_size)
+    plaintext = ''.join(filter(str.isalpha, plaintext.upper()))
+    original_length = len(plaintext)
+
+    if len(plaintext) % block_size != 0:
+        plaintext += 'X' * (block_size - len(plaintext) % block_size)
+
+    nums = [ord(c) - ord('A') for c in plaintext]
+    P = np.array(nums).reshape(-1, block_size)
     C = []
     prev_C = np.array(beta) % m
 
@@ -19,11 +26,12 @@ def hillpp_encrypt(plaintext, K, gamma, beta, m=26):
         C.append(Ci)
         prev_C = Ci
 
-    return np.array(C), vector_to_text(np.array(C))
+    return np.array(C), vector_to_text(np.array(C)), original_length
 
-def hillpp_decrypt(ciphertext, K, gamma, beta, m=26):
+def hillpp_decrypt(ciphertext, K, gamma, beta, original_length=None, m=26):
     block_size = K.shape[0]
-    C = text_to_vector(ciphertext, block_size)
+    nums = [ord(c) - ord('A') for c in ciphertext]
+    C = np.array(nums).reshape(-1, block_size)
     P = []
     prev_C = np.array(beta) % m
 
@@ -34,12 +42,14 @@ def hillpp_decrypt(ciphertext, K, gamma, beta, m=26):
         P.append(Pi)
         prev_C = Ci
 
-    return np.array(P), vector_to_text(np.array(P))
+    plain = vector_to_text(np.array(P))
+    return np.array(P), plain[:original_length] if original_length else plain
 
 def hillpp_encrypt_verbose(plaintext, K, gamma, beta, m=26):
     steps = []
     block_size = K.shape[0]
     plaintext = ''.join(filter(str.isalpha, plaintext.upper()))
+    original_length = len(plaintext)
     if len(plaintext) % block_size != 0:
         plaintext += 'X' * (block_size - len(plaintext) % block_size)
 
@@ -62,11 +72,11 @@ def hillpp_encrypt_verbose(plaintext, K, gamma, beta, m=26):
         C.append(Ci)
         prev_C = Ci
 
-    result = ''.join(chr(int(round(n)) % 26 + ord('A')) for n in np.array(C).flatten())
+    result = vector_to_text(np.array(C))
     steps.append(f"Final ciphertext: {result}")
-    return steps, result
+    return steps, result, original_length
 
-def hillpp_decrypt_verbose(ciphertext, K, gamma, beta, m=26):
+def hillpp_decrypt_verbose(ciphertext, K, gamma, beta, original_length=None, m=26):
     steps = []
     block_size = K.shape[0]
     nums = [ord(c) - ord('A') for c in ciphertext]
@@ -88,6 +98,7 @@ def hillpp_decrypt_verbose(ciphertext, K, gamma, beta, m=26):
         P.append(Pi)
         prev_C = Ci
 
-    result = ''.join(chr(int(round(n)) % 26 + ord('A')) for n in np.array(P).flatten())
+    plain = vector_to_text(np.array(P))
+    result = plain[:original_length] if original_length else plain
     steps.append(f"Final plaintext: {result}")
     return steps, result
