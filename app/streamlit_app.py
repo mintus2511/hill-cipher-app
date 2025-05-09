@@ -58,6 +58,9 @@ def pad_text(text, block_size, filler='/'):
     text = ''.join(filter(str.isalpha, text.upper()))
     return text + filler * ((block_size - len(text) % block_size) % block_size)
 
+def strip_padding(text, filler='/'):
+    return text.rstrip(filler)
+
 if st.session_state.section in ["Hill Cipher", "Hill++"]:
     mod = 26
     block_size = st.number_input("Matrix size (n x n)", min_value=2, max_value=6, value=2, step=1)
