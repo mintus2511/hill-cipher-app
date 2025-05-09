@@ -54,24 +54,12 @@ if st.session_state.section == "User Guide":
     👉 Use the top menu to navigate to encryption sections.
     """)
 
-def pad_text(text, block_size, filler='X'):
+def pad_text(text, block_size, filler='/'):
     text = ''.join(filter(str.isalpha, text.upper()))
     return text + filler * ((block_size - len(text) % block_size) % block_size)
 
-def strip_padding(text, filler='X'):
+def strip_padding(text, filler='/'):
     return text.rstrip(filler)
-
-def decrypt_strip(text, key_matrix, mod=26, filler='X'):
-    result = decrypt(text, key_matrix, mod)
-    return strip_padding(result, filler)
-
-def hillpp_decrypt_strip(text, key_matrix, gamma, beta, mod=26, filler='X'):
-    _, result = hillpp_decrypt(text, key_matrix, gamma, beta, mod)
-    return strip_padding(result, filler)
-
-def hillpp_decrypt_verbose_strip(text, key_matrix, gamma, beta, mod=26, filler='X'):
-    steps, result = hillpp_decrypt_verbose(text, key_matrix, gamma, beta, mod)
-    return steps, strip_padding(result, filler)
 
 if st.session_state.section in ["Hill Cipher", "Hill++"]:
     mod = 26
