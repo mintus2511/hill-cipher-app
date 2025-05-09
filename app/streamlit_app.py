@@ -228,13 +228,15 @@ if st.session_state.section == "Hill++":
         if st.button("▶️ Encrypt (Hill++)"):
             try:
                 if show_steps:
-                    steps, result = hillpp_encrypt_verbose(text_enc, st.session_state.key_matrix, gamma, beta_enc)
+                    steps, result, original_length = hillpp_encrypt_verbose(text_enc, st.session_state.key_matrix, gamma, beta_enc)
+                    st.session_state.original_length = original_length
                     st.success(f"Encrypted text: {result}")
                     st.write("### 🧮 Steps")
                     for s in steps:
                         st.write(s)
                 else:
-                    C_blocks, encrypted_text = hillpp_encrypt(text_enc, st.session_state.key_matrix, gamma, beta_enc)
+                    C_blocks, encrypted_text, original_length = hillpp_encrypt(text_enc, st.session_state.key_matrix, gamma, beta_enc)
+                    st.session_state.original_length = original_length
                     st.success(f"Encrypted text: {encrypted_text}")
                     st.write("🔐 Cipher blocks:")
                     st.write(C_blocks)
@@ -261,13 +263,14 @@ if st.session_state.section == "Hill++":
         if st.button("▶️ Decrypt (Hill++)"):
             try:
                 if show_steps:
-                    steps, result = hillpp_decrypt_verbose(text_dec, st.session_state.key_matrix, gamma, beta_dec)
+                    original_length = st.session_state.get("original_length", len(text_dec))
+                    steps, result = hillpp_decrypt_verbose(text_dec, st.session_state.key_matrix, gamma, beta_dec, original_length)
                     st.success(f"Decrypted text: {result}")
                     st.write("### 🧮 Steps")
                     for s in steps:
                         st.write(s)
                 else:
-                    P_blocks, decrypted_text = hillpp_decrypt(text_dec, st.session_state.key_matrix, gamma, beta_dec)
+                    P_blocks, decrypted_text = hillpp_decrypt(text_dec, st.session_state.key_matrix, gamma, beta_dec, original_length)
                     st.success(f"Decrypted text: {decrypted_text}")
                     st.write("🔓 Plaintext blocks:")
                     st.write(P_blocks)
