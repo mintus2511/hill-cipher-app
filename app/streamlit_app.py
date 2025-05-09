@@ -93,19 +93,27 @@ if st.session_state.section in ["Hill Cipher", "Hill++"]:
     elif st.session_state.matrix_mode == "Auto-generate":
         generate_button_label = "🎲 Generate Involutory Matrix" if st.session_state.section == "Hill++" else "🎲 Generate Invertible Matrix"
         if st.button(generate_button_label):
-            found = False
-            attempts = 0
-            while not found and attempts < 100:
-                random_matrix = np.random.randint(0, 26, size=(block_size, block_size))
-                valid = is_involutory(random_matrix, mod) if st.session_state.section == "Hill++" else is_invertible_matrix(random_matrix, mod)
-                if valid:
-                    st.session_state.key_matrix = random_matrix
-                    st.success("✅ Valid matrix generated!")
-                    st.write(random_matrix)
-                    found = True
-                attempts += 1
-            if not found:
-                st.error("❌ Could not generate a valid matrix after 100 attempts.")
+            if st.session_state.section == "Hill++":
+                matrices = generate_all_involutory_matrices(block_size, mod, max_matrices=1)
+                if matrices:
+                    st.session_state.key_matrix = matrices[0]
+                    st.success("✅ Involutory matrix generated!")
+                    st.write(matrices[0])
+                else:
+                    st.error("❌ Failed to generate involutory matrix.")
+            else:
+                found = False
+                attempts = 0
+                while not found and attempts < 100:
+                    random_matrix = np.random.randint(0, 26, size=(block_size, block_size))
+                    if is_invertible_matrix(random_matrix, mod):
+                        st.session_state.key_matrix = random_matrix
+                        st.success("✅ Invertible matrix generated!")
+                        st.write(random_matrix)
+                        found = True
+                    attempts += 1
+                if not found:
+                    st.error("❌ Could not generate a valid matrix after 100 attempts.")
 
     elif st.session_state.matrix_mode == "Choose from list":
         max_gen = st.slider("Max matrices to generate", 1, 100, 10)
