@@ -17,6 +17,8 @@ if "auto_matrix" not in st.session_state:
     st.session_state.auto_matrix = None
 if "use_same_beta" not in st.session_state:
     st.session_state.use_same_beta = False
+if "use_same_gamma" not in st.session_state:
+    st.session_state.use_same_gamma = False
 if "selected_generated_matrix" not in st.session_state:
     st.session_state.selected_generated_matrix = None
 if "section" not in st.session_state:
@@ -260,17 +262,23 @@ if st.session_state.section == "Hill++":
                 cols[i].number_input(f"β[{i}] (dec)", min_value=0, max_value=25, value=default_val, key=f"beta_{i}_dec_hillpp")
             )
 
+        st.session_state.use_same_gamma = st.checkbox("🔁 Use same γ as encryption", value=False)
+        if st.session_state.use_same_gamma:
+            gamma_dec = st.session_state.get("gamma_enc", 3)
+        else:
+            gamma_dec = st.number_input("Gamma (γ) for decryption", min_value=1, value=3, key="gamma_dec")
+
         if st.button("▶️ Decrypt (Hill++)"):
             try:
                 original_length = st.session_state.get("original_length", len(text_dec))
                 if show_steps:
-                    steps, result = hillpp_decrypt_verbose(text_dec, st.session_state.key_matrix, gamma, beta_dec, original_length)
+                    steps, result = hillpp_decrypt_verbose(text_dec, st.session_state.key_matrix, gamma_dec, beta_dec, original_length)
                     st.success(f"Decrypted text: {result}")
                     st.write("### 🧮 Steps")
                     for s in steps:
                         st.write(s)
                 else:
-                    P_blocks, decrypted_text = hillpp_decrypt(text_dec, st.session_state.key_matrix, gamma, beta_dec, original_length)
+                    P_blocks, decrypted_text = hillpp_decrypt(text_dec, st.session_state.key_matrix, gamma_dec, beta_dec, original_length)
                     st.success(f"Decrypted text: {decrypted_text}")
                     st.write("🔓 Plaintext blocks:")
                     st.write(P_blocks)
