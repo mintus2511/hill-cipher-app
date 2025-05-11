@@ -210,35 +210,39 @@ if st.session_state.section == "Hill Cipher":
                               **Ciphertext:** Only uppercase English letters (A–Z). No spaces or special characters.""")
 
     if st.button("🔁 Run Cipher"):
-        try:
-            clean_text = ''.join(filter(str.isalpha, text_input.upper()))
-            padded_text = pad_text(clean_text, st.session_state.key_matrix.shape[0], filler='X')
-            if mode == "Encrypt":
-                result = encrypt(padded_text, st.session_state.key_matrix, mod)
-                st.text_area("Result:", value=strip_padding(result), height=100)
+    try:
+        filtered_text = ''.join(filter(str.isalpha, text_input.upper()))
+        if not filtered_text:
+            raise ValueError("Input must contain at least one valid A–Z character (A–Z only).")
+        
+        padded_text = pad_text(filtered_text, st.session_state.key_matrix.shape[0], filler='X')
+        
+        if mode == "Encrypt":
+            result = encrypt(padded_text, st.session_state.key_matrix, mod)
+            st.text_area("Result:", value=strip_padding(result), height=100)
 
+            if show_steps:
+                st.write("### 🔎 Step-by-step Encryption")
+                st.write("1. Preprocessed text:", padded_text)
+                numeric = text_to_numbers(''.join(filter(str.isalpha, padded_text.upper())))
+                st.write("2. Numeric form:", numeric)
+                st.write("3. Multiply each block by key matrix and take mod 26")
 
-                if show_steps:
-                    st.write("### 🔎 Step-by-step Encryption")
-                    st.write("1. Preprocessed text:", padded_text)  # padded_text giờ là "HELLOX" chứ không còn "HELLO/"
-                    st.write("2. Numeric form:", text_to_numbers(padded_text))
-                    st.write("3. Multiply each block by key matrix and take mod 26")
+        else:
+            result = decrypt(text_input, st.session_state.key_matrix, mod)
+            st.text_area("Result:", value=strip_padding(result), height=100)
 
-
-            else:
-                result = decrypt(text_input, st.session_state.key_matrix, mod)
-                sst.text_area("Result:", value=strip_padding(result), height=100)
-
-                if show_steps:
-                    st.write("### 🔎 Step-by-step Decryption")
-                    st.write("1. Numeric form:", text_to_numbers(text_input))
-                    inv = mod_matrix_inverse(st.session_state.key_matrix, mod)
-                    st.write("2. Inverse matrix:")
-                    st.write(inv)
-                    st.write("3. Multiply each block by inverse matrix and take mod 26")
-
-        except Exception as e:
-            st.error(f"❌ Error: {e}")
+            if show_steps:
+                st.write("### 🔎 Step-by-step Decryption")
+                numeric = text_to_numbers(''.join(filter(str.isalpha, text_input.upper())))
+                st.write("1. Numeric form:", numeric)
+                inv = mod_matrix_inverse(st.session_state.key_matrix, mod)
+                st.write("2. Inverse matrix:")
+                st.write(inv)
+                st.write("3. Multiply each block by inverse matrix and take mod 26")
+                
+    except Exception as e:
+        st.error(f"❌ Error: {e}")
 
 if st.session_state.section == "Hill++":
     st.markdown("## 🔐 Hill++ Mode")
