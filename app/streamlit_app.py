@@ -174,7 +174,7 @@ if st.session_state.section in ["Hill Cipher", "Hill++"]:
             st.session_state.generated_matrices = matrices
 
         if "generated_matrices" in st.session_state:
-            matrix_options = {f"Matrix {i+1}:": m for i, m in enumerate(st.session_state.generated_matrices)}
+            matrix_options = {f"Matrix {i+1}": m for i, m in enumerate(st.session_state.generated_matrices)}
             selected = st.selectbox(
                 "Choose a matrix to use:",
                 list(matrix_options.keys()),
