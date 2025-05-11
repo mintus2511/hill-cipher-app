@@ -33,6 +33,8 @@ def mod_matrix_inverse(matrix, mod):
         raise ValueError(f"Matrix is not invertible under mod {mod}")
 
 def encrypt(plaintext, key_matrix, mod=26):
+    if not clean_text.isalpha():
+    raise ValueError("Input must only contain A–Z characters.")
     block_size = key_matrix.shape[0]
     plaintext = preprocess_text(plaintext, block_size)
     numbers = text_to_numbers(plaintext)
