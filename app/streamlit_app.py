@@ -220,7 +220,8 @@ if st.session_state.section == "Hill Cipher":
                 if show_steps:
                     st.write("### 🔎 Step-by-step Encryption")
                     st.write("1. Preprocessed text:", padded_text)
-                    st.write("2. Numeric form:", text_to_numbers(padded_text))
+                    clean_text = ''.join(filter(str.isalpha, padded_text.upper()))
+                    st.write("2. Numeric form:", text_to_numbers(clean_text))
                     st.write("3. Multiply each block by key matrix and take mod 26")
 
             else:
