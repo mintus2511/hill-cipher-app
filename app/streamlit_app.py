@@ -201,6 +201,8 @@ if st.session_state.section == "Hill++":
 
     with left_col:
         st.markdown("### 🔐 Encrypt")
+
+        text_enc = st.text_input("Enter text to encrypt (A–Z):", "HELLO", key="hillpp_text_enc")
         gamma = st.number_input("Gamma (γ)", min_value=1, value=3, key="gamma_enc")
 
         col1, col2 = st.columns([1, 1])
@@ -226,7 +228,6 @@ if st.session_state.section == "Hill++":
         if st.session_state.use_same_beta:
             st.session_state.random_beta_dec = beta_enc.copy()
 
-        text_enc = st.text_input("Enter text to encrypt (A–Z):", "HELLO", key="hillpp_text_enc")
         if st.button("▶️ Encrypt (Hill++)"):
             try:
                 if show_steps:
