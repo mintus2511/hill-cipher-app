@@ -27,7 +27,7 @@ if "matrix_mode" not in st.session_state:
     st.session_state.matrix_mode = "Manual"
 
 st.set_page_config(page_title="🔐 Hill Cipher", layout="centered")
-st.title("🔐 Hill Cipher Visualization")
+st.title("""🔐 **Hill Cipher/Hill++ Visualization**""")
 
 # --- Navigation ---
 st.session_state.section = st.radio(
@@ -41,15 +41,15 @@ if st.session_state.section == "User Guide":
     
     **Hill Cipher:**
     
-    ***What is Hill Cipher:***
+    ***What is Hill Cipher?***
     - Hill Cipher was invented by American mathematician Lester S. Hill in 1929, the Hill cipher marked a significant advance in classical cryptography. It was the first practical polygraphic substitution cipher that could encrypt blocks of more than three letters at a time, making it a true block cipher. 
     
-    ***Input Requirement:*** 
+    ***Input Requirement*** 
     - Plaintext: Enter the message you want to encrypt. Only alphabetic characters are processed; spaces and punctuation should be removed or handled separately. You must write UPPERCASE letters.
     - Block size (n): The dimension of the key matrix (e.g., 2 or 3). The plaintext will be split into blocks of this size. You must write UPPERCASE letters.
     - Key matrix: Users can enter the matrix manually, auto-generated, or choose from the list of available matrices. One requirement for key matrices is that they have to be invertible.
     
-    ***How to Use:***
+    ***How to Use***
     1. Enter your plaintext message.
     2. Specify the block size (n), and key matrix.
     3. Click **Encrypt** to generate the ciphertext.
@@ -93,7 +93,7 @@ if st.session_state.section in ["Hill Cipher", "Hill++"]:
     block_size = st.number_input(
         "Matrix size (n x n)",
         min_value=2, max_value=6, value=2, step=1,
-        help="Choose the size of the key matrix used for encryption and decryption"
+        help=" The dimension of the key matrix (e.g., 2 or 3). The plaintext will be split into blocks of this size."
     )
 
     if "last_size" not in st.session_state or st.session_state.last_size != block_size:
@@ -106,9 +106,9 @@ if st.session_state.section in ["Hill Cipher", "Hill++"]:
 
     st.session_state.matrix_mode = st.radio(
         "Choose matrix input mode:",
-        ["Manual", "Auto-generate", "Choose from list"],
+        ["Manual", "Auto-generate", "Generate all possible key matrix"],
         key="matrix_mode_selector",
-        help="Select how you want to provide the key matrix: manually, generate randomly, or choose from a list"
+        help="""**Key matrix:** Users can enter the matrix manually, auto-generated, or choose from the list of available matrices. One requirement for key matrices is that they have to be invertible (for Hill Cipher) or involuntary (for Hill++)."""
     )
 
     if st.session_state.matrix_mode == "Manual":
@@ -132,7 +132,7 @@ if st.session_state.section in ["Hill Cipher", "Hill++"]:
 
     elif st.session_state.matrix_mode == "Auto-generate":
         generate_button_label = "🎲 Generate Involutory Matrix" if st.session_state.section == "Hill++" else "🎲 Generate Invertible Matrix"
-        if st.button(generate_button_label, help="Automatically create a valid key matrix for encryption"):
+        if st.button(generate_button_label, help="Automatically create a valid key matrix for calculation."):
             if st.session_state.section == "Hill++":
                 matrices = generate_all_involutory_matrices(block_size, mod, max_matrices=1)
                 if matrices:
@@ -204,7 +204,8 @@ if st.session_state.section == "Hill Cipher":
     st.markdown("---")
     st.subheader("✍️ Encrypt / Decrypt Message")
     mode = st.radio("Mode", ["Encrypt", "Decrypt"])
-    text_input = st.text_input("Enter text (A–Z only):", "HELLO")
+    text_input = st.text_input("Enter plaintext (A–Z only):", "HELLO",
+                              help="**Plaintext:** Enter the message you want to encrypt. Only alphabetic characters are processed; spaces and punctuation should be removed or handled separately.")
 
     if st.button("🔁 Run Cipher"):
         try:
@@ -244,8 +245,14 @@ if st.session_state.section == "Hill++":
     with left_col:
         st.markdown("### 🔐 Encrypt")
 
-        text_enc = st.text_input("Enter text to encrypt (A–Z):", "HELLO", key="hillpp_text_enc")
-        gamma = st.number_input("Gamma (γ)", min_value=1, value=3, key="gamma_enc")
+        text_enc = st.text_input("Enter plaintext to encrypt (A–Z only):", "HELLO", key="hillpp_text_enc",
+                                help="""**Plaintext:**
+                                        - Only uppercase English letters (A–Z).
+                                        - No spaces, numbers, or special characters.
+                                        - Length should be a multiple of block size (padding with 'X' is automatic if needed).
+                                        """)
+        gamma = st.number_input("Gamma (γ)", min_value=1, value=3, key="gamma_enc",
+                               help="""**Secret Multiplier:** Integer between 0 and m-1 (usually 0-25) """)
 
         col1, col2 = st.columns([1, 1])
         if col1.button("🎲 Generate β (Seed Vector)"):
@@ -263,7 +270,8 @@ if st.session_state.section == "Hill++":
                 else 1
             )
             beta_enc.append(
-                cols[i].number_input(f"β[{i}]", min_value=0, max_value=25, value=default_val, key=f"beta_{i}_hillpp")
+                cols[i].number_input(f"β[{i}]", min_value=0, max_value=25, value=default_val, key=f"beta_{i}_hillpp",
+                                    help="Manually input each element of the seed vector β")
             )
 
         st.session_state.use_same_beta = st.checkbox("🔁 Use same β for decryption")
@@ -290,7 +298,12 @@ if st.session_state.section == "Hill++":
 
     with right_col:
         st.markdown("### 🔓 Decrypt")
-        text_dec = st.text_input("Enter text to decrypt (A–Z):", key="hillpp_text_dec")
+        text_dec = st.text_input("Enter plaintext to decrypt (A–Z only):", key="hillpp_text_dec",
+                                help="""**Plaintext:**
+                                        - Only uppercase English letters (A–Z).
+                                        - No spaces, numbers, or special characters.
+                                        - Length should be a multiple of block size (padding with 'X' is automatic if needed).
+                                        """)
 
         st.markdown("#### 🔢 Enter β for decryption")
         beta_dec = []
@@ -302,14 +315,16 @@ if st.session_state.section == "Hill++":
                 else 1
             )
             beta_dec.append(
-                cols[i].number_input(f"β[{i}] (dec)", min_value=0, max_value=25, value=default_val, key=f"beta_{i}_dec_hillpp")
+                cols[i].number_input(f"β[{i}] (dec)", min_value=0, max_value=25, value=default_val, key=f"beta_{i}_dec_hillpp",
+                                    help="Manually input each element of the seed vector β")
             )
 
         st.session_state.use_same_gamma = st.checkbox("🔁 Use same γ as encryption", value=False)
         if st.session_state.use_same_gamma:
             gamma_dec = st.session_state.get("gamma_enc", 3)
         else:
-            gamma_dec = st.number_input("Gamma (γ) for decryption", min_value=1, value=3, key="gamma_dec")
+            gamma_dec = st.number_input("Gamma (γ) for decryption", min_value=1, value=3, key="gamma_dec",
+                                       help="""**Secret Multiplier:** Integer between 0 and m-1 (usually 0-25) """)
 
         if st.button("▶️ Decrypt (Hill++)"):
             try:
