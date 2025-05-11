@@ -38,22 +38,46 @@ st.session_state.section = st.radio(
 if st.session_state.section == "User Guide":
     st.markdown("""
     ## 📘 User Guide
+    
+    **Hill Cipher:**
+    
+    ***What is Hill Cipher:***
+    - Hill Cipher was invented by American mathematician Lester S. Hill in 1929, the Hill cipher marked a significant advance in classical cryptography. It was the first practical polygraphic substitution cipher that could encrypt blocks of more than three letters at a time, making it a true block cipher. 
+    
+    ***Input Requirement:*** 
+    - Plaintext: Enter the message you want to encrypt. Only alphabetic characters are processed; spaces and punctuation should be removed or handled separately. You must write UPPERCASE letters.
+    - Block size (n): The dimension of the key matrix (e.g., 2 or 3). The plaintext will be split into blocks of this size. You must write UPPERCASE letters.
+    - Key matrix: Users can enter the matrix manually, auto-generated, or choose from the list of available matrices. One requirement for key matrices is that they have to be invertible.
+    
+    ***How to Use:***
+    1. Enter your plaintext message.
+    2. Specify the block size (n), and key matrix.
+    3. Click “Encrypt” to generate the ciphertext.
+    4. To decrypt, enter the ciphertext and the same parameters, then click “Decrypt.”
 
-    **1. What is Hill Cipher?**
-    - A secure variant of the Hill cipher using involutory or invertible matrices.
+    **Hill ++** 
 
-    **2. How to use:**
-    - Choose matrix size (2–6)
-    - Manually input or auto-generate a key matrix
-    - Enter plaintext or ciphertext (A–Z only)
-    - For Hill++: specify gamma (γ) and initial vector β
-
-    **3. Notes:**
-    - Use uppercase English letters only (A–Z)
-    - The key matrix must be involutory (K² ≡ I mod 26) or invertible for Hill Cipher
-    - Hill++ decryption requires correct β and γ values
-
-    👉 Use the top menu to navigate to encryption sections.
+    ***What is Hill++?***
+    - Hill++ is an enhanced version of the classical Hill cipher that improves security by using an involutory key matrix (a matrix that is its own inverse) and a dynamic random matrix key (RMK) generated from previous ciphertext blocks. This approach eliminates the need for computing matrix inverses during decryption and increases resistance to known-plaintext attacks.
+    
+    ***Input Requirements***
+    - Plaintext: Enter the message you want to encrypt. Only alphabetic characters are processed; spaces and punctuation should be removed or handled separately.
+    - Block size (n): The dimension of the key matrix (e.g., 2 or 3). The plaintext will be split into blocks of this size.
+    - Seed vector (β): An initial numeric vector of length n used as the starting random matrix key (RMK).
+    - Multiplying factor (γ): A numeric factor used to generate RMK for subsequent blocks from previous ciphertext blocks.
+    - Modulus (m): The modulus for arithmetic operations, typically 26 for the English alphabet.
+    
+    ***How to Use***
+    1. Enter your plaintext message.
+    2. Specify the block size (n), seed vector (β), multiplying factor (γ), and modulus (m).
+    3. Click “Encrypt” to generate the ciphertext.
+    4. To decrypt, enter the ciphertext and the same parameters, then click “Decrypt.”
+    
+    ***Note***
+     
+    - Not all matrices are valid keys. The key matrix must be a square involutory matrix modulo m, meaning it satisfies:
+    **K^2≡I (modm)**
+    where I is the identity matrix.  If these conditions are not met, the matrix cannot be used as a key.
     """)
 
 def pad_text(text, block_size, filler='/'):
