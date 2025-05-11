@@ -81,11 +81,11 @@ if st.session_state.section == "User Guide":
     where I is the identity matrix.  If these conditions are not met, the matrix cannot be used as a key.
     """)
 
-def pad_text(text, block_size, filler="X"):
+def pad_text(text, block_size, filler='X'):
     text = ''.join(filter(str.isalpha, text.upper()))
     return text + filler * ((block_size - len(text) % block_size) % block_size)
 
-def strip_padding(text, filler="X"):
+def strip_padding(text, filler='X'):
     return text.rstrip(filler)
 
 if st.session_state.section in ["Hill Cipher", "Hill++"]:
@@ -211,7 +211,7 @@ if st.session_state.section == "Hill Cipher":
 
     if st.button("🔁 Run Cipher"):
         try:
-            padded_text = pad_text(text_input, st.session_state.key_matrix.shape[0], filler="X")
+            padded_text = pad_text(text_input, st.session_state.key_matrix.shape[0], filler='X')
             if mode == "Encrypt":
                 result = encrypt(padded_text, st.session_state.key_matrix, mod)
                 st.text_area("Result:", value=strip_padding(result), height=100)
