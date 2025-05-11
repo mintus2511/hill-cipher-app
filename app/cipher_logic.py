@@ -10,7 +10,8 @@ def preprocess_text(text, block_size):
     return text
 
 def text_to_numbers(text):
-    return [ALPHABET.index(char) for char in text]
+    ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    return [ALPHABET.index(char) for char in text if char in ALPHABET]
 
 def numbers_to_text(numbers):
     return ''.join(ALPHABET[num % 26] for num in numbers)
