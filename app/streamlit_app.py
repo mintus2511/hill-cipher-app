@@ -274,7 +274,7 @@ if st.session_state.section == "Hill++":
                                     help="Manually input each element of the seed vector β")
             )
 
-        st.session_state.use_same_beta = st.checkbox("🔁 Use same β for decryption")
+        st.session_state.use_same_beta = st.checkbox("🔁 Use same β for decryption", help="Use the same β (seed vector) from encryption for decryption")
         if st.session_state.use_same_beta:
             st.session_state.random_beta_dec = beta_enc.copy()
 
@@ -319,7 +319,7 @@ if st.session_state.section == "Hill++":
                                     help="Manually input each element of the seed vector β")
             )
 
-        st.session_state.use_same_gamma = st.checkbox("🔁 Use same γ as encryption", value=False)
+        st.session_state.use_same_gamma = st.checkbox("🔁 Use same γ as encryption", value=False, help="Use the same γ multiplier value as in encryption")
         if st.session_state.use_same_gamma:
             gamma_dec = st.session_state.get("gamma_enc", 3)
         else:
