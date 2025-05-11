@@ -210,7 +210,7 @@ if st.session_state.section == "Hill Cipher":
                               **Ciphertext:** Only uppercase English letters (A–Z). No spaces or special characters.""")
 
     if st.button("🔁 Run Cipher"):
-    try:
+        try:
         filtered_text = ''.join(filter(str.isalpha, text_input.upper()))
         if not filtered_text:
             raise ValueError("Input must contain at least one valid A–Z character (A–Z only).")
