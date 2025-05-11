@@ -55,6 +55,7 @@ if st.session_state.section == "User Guide":
     3. Click **Encrypt** to generate the ciphertext.
     4. To decrypt, enter the ciphertext and the same parameters, then click **Decrypt**.
 
+
     **Hill ++** 
 
     ***What is Hill++?***
