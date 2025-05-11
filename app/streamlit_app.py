@@ -222,7 +222,7 @@ if st.session_state.section == "Hill Cipher":
 
             else:
                 result = decrypt(text_input, st.session_state.key_matrix, mod)
-                st.text_area("Result:", value=result, height=100)
+                sst.text_area("Result:", value=strip_padding(result), height=100)
 
                 if show_steps:
                     st.write("### 🔎 Step-by-step Decryption")
