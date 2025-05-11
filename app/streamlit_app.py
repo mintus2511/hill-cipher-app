@@ -65,7 +65,11 @@ def strip_padding(text, filler='/'):
 
 if st.session_state.section in ["Hill Cipher", "Hill++"]:
     mod = 26
-    block_size = st.number_input("Matrix size (n x n)", min_value=2, max_value=6, value=2, step=1)
+    block_size = st.number_input(
+        "Matrix size (n x n)",
+        min_value=2, max_value=6, value=2, step=1,
+        help="Choose the size of the key matrix used for encryption and decryption"
+    )
 
     if "last_size" not in st.session_state or st.session_state.last_size != block_size:
         st.session_state.auto_matrix = None
@@ -75,7 +79,12 @@ if st.session_state.section in ["Hill Cipher", "Hill++"]:
     st.markdown("---")
     st.subheader("🔑 Key Matrix Setup")
 
-    st.session_state.matrix_mode = st.radio("Choose matrix input mode:", ["Manual", "Auto-generate", "Choose from list"], key="matrix_mode_selector")
+    st.session_state.matrix_mode = st.radio(
+        "Choose matrix input mode:",
+        ["Manual", "Auto-generate", "Choose from list"],
+        key="matrix_mode_selector",
+        help="Select how you want to provide the key matrix: manually, generate randomly, or choose from a list"
+    )
 
     if st.session_state.matrix_mode == "Manual":
         st.markdown(f"Enter your {block_size}×{block_size} key matrix below (mod 26):")
@@ -89,7 +98,8 @@ if st.session_state.section in ["Hill Cipher", "Hill++"]:
                     else (3 if i == j else 2)
                 )
                 key_matrix[i][j] = cols[j].number_input(
-                    f"Key[{i},{j}]", min_value=0, max_value=25, value=default_val, key=f"key_{i}_{j}"
+                    f"Key[{i},{j}]", min_value=0, max_value=25, value=default_val, key=f"key_{i}_{j}",
+                    help="Manually input each element of the key matrix"
                 )
         st.session_state.key_matrix = key_matrix
         st.write("Key matrix:")
@@ -97,7 +107,7 @@ if st.session_state.section in ["Hill Cipher", "Hill++"]:
 
     elif st.session_state.matrix_mode == "Auto-generate":
         generate_button_label = "🎲 Generate Involutory Matrix" if st.session_state.section == "Hill++" else "🎲 Generate Invertible Matrix"
-        if st.button(generate_button_label):
+        if st.button(generate_button_label, help="Automatically create a valid key matrix for encryption"):
             if st.session_state.section == "Hill++":
                 matrices = generate_all_involutory_matrices(block_size, mod, max_matrices=1)
                 if matrices:
@@ -121,8 +131,11 @@ if st.session_state.section in ["Hill Cipher", "Hill++"]:
                     st.error("❌ Could not generate a valid matrix after 100 attempts.")
 
     elif st.session_state.matrix_mode == "Choose from list":
-        max_gen = st.slider("Max matrices to generate", 1, 100, 10)
-        if st.button("🔍 Generate All Matrices"):
+        max_gen = st.slider(
+            "Max matrices to generate", 1, 100, 10,
+            help="Choose how many candidate matrices to generate and pick one to use"
+        )
+        if st.button("🔍 Generate All Matrices", help="Generate a list of all valid matrices to choose from"):
             if st.session_state.section == "Hill++":
                 matrices = generate_all_involutory_matrices(block_size, mod, max_gen)
             else:
@@ -137,7 +150,11 @@ if st.session_state.section in ["Hill Cipher", "Hill++"]:
 
         if "generated_matrices" in st.session_state:
             matrix_options = {f"Matrix {i+1}:": m for i, m in enumerate(st.session_state.generated_matrices)}
-            selected = st.selectbox("Choose a matrix to use:", list(matrix_options.keys()))
+            selected = st.selectbox(
+                "Choose a matrix to use:",
+                list(matrix_options.keys()),
+                help="Pick one matrix from the generated list to use"
+            )
             if selected:
                 st.session_state.key_matrix = matrix_options[selected]
                 st.success("✅ Matrix selected and applied.")
