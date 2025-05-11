@@ -33,11 +33,18 @@ def mod_matrix_inverse(matrix, mod):
         raise ValueError(f"Matrix is not invertible under mod {mod}")
 
 def encrypt(plaintext, key_matrix, mod=26):
-    if not clean_text.isalpha():
-    raise ValueError("Input must only contain A–Z characters.")
     block_size = key_matrix.shape[0]
-    plaintext = preprocess_text(plaintext, block_size)
-    numbers = text_to_numbers(plaintext)
+    
+    # Làm sạch: chỉ giữ ký tự A–Z
+    clean_text = ''.join(filter(str.isalpha, plaintext.upper()))
+    if not clean_text:
+        raise ValueError("Input must contain at least one valid A–Z character.")
+
+    # Thêm padding nếu cần
+    padded_text = preprocess_text(clean_text, block_size)
+    
+    # Convert to numbers
+    numbers = text_to_numbers(padded_text)
     ciphertext = []
 
     for i in range(0, len(numbers), block_size):
@@ -47,9 +54,14 @@ def encrypt(plaintext, key_matrix, mod=26):
 
     return numbers_to_text(ciphertext)
 
+
 def decrypt(ciphertext, key_matrix, mod=26):
     block_size = key_matrix.shape[0]
-    numbers = text_to_numbers(ciphertext)
+    clean_text = ''.join(filter(str.isalpha, ciphertext.upper()))
+    if not clean_text:
+        raise ValueError("Ciphertext must contain A–Z characters only.")
+
+    numbers = text_to_numbers(clean_text)
     inverse_key = mod_matrix_inverse(key_matrix, mod)
     plaintext = []
 
