@@ -155,7 +155,7 @@ if st.session_state.section in ["Hill Cipher", "Hill++"]:
                 if not found:
                     st.error("❌ Could not generate a valid matrix after 100 attempts.")
 
-    elif st.session_state.matrix_mode == "Choose from list":
+    elif st.session_state.matrix_mode == "Generate all possible key matrix":
         max_gen = st.slider(
             "Max matrices to generate", 1, 100, 10,
             help="Choose how many candidate matrices to generate and pick one to use"
