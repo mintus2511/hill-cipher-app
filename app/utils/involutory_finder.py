@@ -40,16 +40,19 @@ def generate_all_diagonal_involutory(n, m):
         matrices.append(K)
     return matrices
 
-def generate_all_involutory_matrices(n, m, max_matrices=100):
-    matrices = generate_all_diagonal_involutory(n, m)
-    if n % 2 == 0:
-        count = 0
-        for _ in range(max_matrices):
-            K = generate_even_involutory_matrix(n, m)
-            if K is not None and not any(np.array_equal(K, mat) for mat in matrices):
-                matrices.append(K)
-                count += 1
-    return matrices
+def generate_all_involutory_matrices(n, mod=26, max_matrices=10):
+    found = []
+    attempts = 0
+    max_attempts = max_matrices * 100  # giới hạn tối đa
+
+    while len(found) < max_matrices and attempts < max_attempts:
+        M = np.random.randint(0, mod, size=(n, n))
+        if is_involutory(M, mod):
+            found.append(M)
+        attempts += 1
+
+    return found
+
 
 def construct_from_user_blocks(n, m, A22, A12, max_attempts=1000):
     half_n = n // 2
