@@ -205,7 +205,9 @@ if st.session_state.section == "Hill Cipher":
     st.subheader("✍️ Encrypt / Decrypt Message")
     mode = st.radio("Mode", ["Encrypt", "Decrypt"])
     text_input = st.text_input("Enter plaintext (A–Z only):", "HELLO",
-                              help="**Plaintext:** Enter the message you want to encrypt. Only alphabetic characters are processed; spaces and punctuation should be removed or handled separately.")
+                              help="""**Plaintext:** Enter the message you want to encrypt. Only alphabetic characters are processed; spaces and punctuation should be removed or handled separately.
+                              
+                              **Ciphertext:** Only uppercase English letters (A–Z). No spaces or special characters.""")
 
     if st.button("🔁 Run Cipher"):
         try:
@@ -299,10 +301,9 @@ if st.session_state.section == "Hill++":
     with right_col:
         st.markdown("### 🔓 Decrypt")
         text_dec = st.text_input("Enter plaintext to decrypt (A–Z only):", key="hillpp_text_dec",
-                                help="""**Plaintext:**
+                                help="""**Ciphertext:**
                                         - Only uppercase English letters (A–Z).
-                                        - No spaces, numbers, or special characters.
-                                        - Length should be a multiple of block size (padding with 'X' is automatic if needed).
+                                        - No spaces or special characters.
                                         """)
 
         st.markdown("#### 🔢 Enter β for decryption")
