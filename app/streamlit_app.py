@@ -214,7 +214,8 @@ if st.session_state.section == "Hill Cipher":
             padded_text = pad_text(text_input, st.session_state.key_matrix.shape[0], filler='X')
             if mode == "Encrypt":
                 result = encrypt(padded_text, st.session_state.key_matrix, mod)
-                st.text_area("Result:", value=result, height=100)
+                st.text_area("Result:", value=strip_padding(result), height=100)
+
 
                 if show_steps:
                     st.write("### 🔎 Step-by-step Encryption")
