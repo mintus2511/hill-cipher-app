@@ -211,7 +211,8 @@ if st.session_state.section == "Hill Cipher":
 
     if st.button("🔁 Run Cipher"):
         try:
-            padded_text = pad_text(text_input, st.session_state.key_matrix.shape[0], filler='X')
+            clean_text = ''.join(filter(str.isalpha, text_input.upper()))
+            padded_text = pad_text(clean_text, st.session_state.key_matrix.shape[0], filler='X')
             if mode == "Encrypt":
                 result = encrypt(padded_text, st.session_state.key_matrix, mod)
                 st.text_area("Result:", value=strip_padding(result), height=100)
@@ -219,10 +220,10 @@ if st.session_state.section == "Hill Cipher":
 
                 if show_steps:
                     st.write("### 🔎 Step-by-step Encryption")
-                    st.write("1. Preprocessed text:", padded_text)
-                    clean_text = ''.join(filter(str.isalpha, padded_text.upper()))
-                    st.write("2. Numeric form:", text_to_numbers(clean_text))
+                    st.write("1. Preprocessed text:", padded_text)  # padded_text giờ là "HELLOX" chứ không còn "HELLO/"
+                    st.write("2. Numeric form:", text_to_numbers(padded_text))
                     st.write("3. Multiply each block by key matrix and take mod 26")
+
 
             else:
                 result = decrypt(text_input, st.session_state.key_matrix, mod)
