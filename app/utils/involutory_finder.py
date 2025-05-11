@@ -62,7 +62,7 @@ def generate_all_involutory_matrices(n, mod=26, max_matrices=10):
     """
     Generate a list of involutory matrices using structured methods for better performance.
     """
-    found = []
+    found = set()
     attempts = 0
     max_attempts = max_matrices * 200
 
@@ -71,11 +71,13 @@ def generate_all_involutory_matrices(n, mod=26, max_matrices=10):
             K = generate_even_involutory_matrix(n, mod)
         else:
             K = generate_odd_involutory_matrix(n, mod)
-        if K is not None and not any(np.array_equal(K, f) for f in found):
-            found.append(K)
+        if K is not None:
+            key = tuple(K.flatten())
+            if key not in found:
+                found.add(key)
         attempts += 1
 
-    return found
+    return [np.array(k).reshape((n, n)) for k in map(lambda x: np.array(x), found)]
 
 
 def construct_from_user_blocks(n, m, A22, A12, max_attempts=1000):
