@@ -52,8 +52,8 @@ if st.session_state.section == "User Guide":
     ***How to Use:***
     1. Enter your plaintext message.
     2. Specify the block size (n), and key matrix.
-    3. Click “Encrypt” to generate the ciphertext.
-    4. To decrypt, enter the ciphertext and the same parameters, then click “Decrypt.”
+    3. Click **Encrypt** to generate the ciphertext.
+    4. To decrypt, enter the ciphertext and the same parameters, then click **Decrypt**.
 
     **Hill ++** 
 
@@ -70,8 +70,8 @@ if st.session_state.section == "User Guide":
     ***How to Use***
     1. Enter your plaintext message.
     2. Specify the block size (n), seed vector (β), multiplying factor (γ), and modulus (m).
-    3. Click “Encrypt” to generate the ciphertext.
-    4. To decrypt, enter the ciphertext and the same parameters, then click “Decrypt.”
+    3. Click **Encrypt** to generate the ciphertext.
+    4. To decrypt, enter the ciphertext and the same parameters, then click **Decrypt**.
     
     ***Note***
      
